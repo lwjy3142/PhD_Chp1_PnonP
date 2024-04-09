@@ -1,0 +1,762 @@
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+library(rmarkdown)    # You need this library to run this template.
+library(epuRate)      # Install with devtools: install_github("holtzy/epuRate", force=TRUE)
+```
+  
+```{r, warning=FALSE, message=FALSE, fig.width=9}
+# Load the library
+library(qqman)
+library(data.table)
+library(ggrepel)
+library(tidyverse)
+#library(epuRate) 
+```
+
+# for SCZ
+```{r}
+setwd('/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check')
+gwasResults <- fread('./nonp_residuals_sumstats/SCZ_nonp_gwas_results.txt')
+independenthit <- fread('./nonp_ld_clumping/CLUMP_SCZnonp_gwase_sig_independent_signals_New.txt')
+snpsOfInterest <- as.list(independenthit[,1])
+snpsOfInterest <- snpsOfInterest$V1
+
+# Make the Manhattan plot on the gwasResults dataset
+#manhattan(gwasResults, chr="CHR", bp="BP", snp="RS", p="P" , highlight = snpsOfInterest, cex=0.4, col = c('blue4', 'orange3'))
+
+# List of SNPs to highlight are in the snpsOfInterest object
+# We will use ggrepel for the annotation
+
+
+# Prepare the dataset
+don <- gwasResults %>% 
+  mutate(CHR = as.numeric(CHR)) %>%
+  mutate(BP = as.numeric(BP)) %>% 
+  # Compute chromosome size
+  group_by(CHR) %>% 
+  summarise(chr_len=max(BP))  %>%
+  # Calculate cumulative position of each chromosome
+  mutate(tot=cumsum(chr_len)-chr_len) %>%
+  select(-chr_len) %>%
+  
+  # Add this info to the initial dataset
+  left_join(gwasResults, ., by=c("CHR"="CHR")) %>%
+  
+  # Add a cumulative position of each SNP
+  arrange(CHR, BP) %>%
+  mutate( BPcum=BP+tot) %>%
+
+  # Add highlight and annotation information
+  mutate( is_highlight=ifelse(SNP %in% snpsOfInterest, "yes", "no"))
+
+# Prepare X axis
+axisdf <- don %>% group_by(CHR) %>% summarize(center=( max(BPcum) + min(BPcum) ) / 2 )
+
+sig <- 5e-8
+y_min <- 0
+y_max <- max(-log10(don$P)) + 1 # set the y limit according to schizophrenia Nonp
+
+# Make the plot
+manhattan <- ggplot(don, aes(x=BPcum, y=-log10(P))) +
+    geom_hline(yintercept = -log10(sig), color = "grey40", linetype = "dashed") +
+    
+    # Show all points
+    geom_point( aes(color=as.factor(CHR)), alpha=1, size=0.6) +
+    scale_color_manual(values = rep(c("blue", "green4"), 22 )) +
+    
+    # custom X axis:
+    scale_x_continuous(label = axisdf$CHR, breaks= axisdf$center ) +
+    scale_y_continuous(expand = c(0, 0), limits = c(y_min, y_max)) +     # remove space between plot area and x axis
+
+    # Add highlighted points
+    geom_point(data=subset(don, is_highlight=="yes"), size=1.5, shape=23, fill="orangered", color="darkred") +
+
+    # Custom the theme:
+    theme_bw() +
+    theme( 
+      legend.position="none",
+      panel.border = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      axis.text.x = element_text(size = 6)
+    )+
+  labs(x = "Chromosome")
+# Save the ggplot as a file
+ggsave("nonp_manhattan_plots/SCZnonP_manhatten.png", manhattan,width = 7.29, height = 4.5, units = "in", dpi = 300)
+```
+# for BIP
+```{r}
+gwasResults <- fread('./nonp_residuals_sumstats/BIP_nonp_gwas_results.txt')
+independenthit <- fread('./nonp_ld_clumping/CLUMP_BIPnonp_gwase_sig_independent_signals_New.txt')
+snpsOfInterest <- as.list(independenthit[,1])
+snpsOfInterest <- snpsOfInterest$V1
+
+# Make the Manhattan plot on the gwasResults dataset
+#manhattan(gwasResults, chr="CHR", bp="BP", snp="RS", p="P" , highlight = snpsOfInterest, cex=0.4, col = c('blue4', 'orange3'))
+
+# List of SNPs to highlight are in the snpsOfInterest object
+# We will use ggrepel for the annotation
+  
+# Prepare the dataset
+don <- gwasResults %>% 
+  mutate(CHR = as.numeric(CHR)) %>%
+  mutate(BP = as.numeric(BP)) %>% 
+  # Compute chromosome size
+  group_by(CHR) %>% 
+  summarise(chr_len=max(BP))  %>%
+  # Calculate cumulative position of each chromosome
+  mutate(tot=cumsum(chr_len)-chr_len) %>%
+  select(-chr_len) %>%
+  
+  # Add this info to the initial dataset
+  left_join(gwasResults, ., by=c("CHR"="CHR")) %>%
+  
+  # Add a cumulative position of each SNP
+  arrange(CHR, BP) %>%
+  mutate( BPcum=BP+tot) %>%
+
+  # Add highlight and annotation information
+  mutate( is_highlight=ifelse(SNP %in% snpsOfInterest, "yes", "no"))
+
+# Prepare X axis
+axisdf <- don %>% group_by(CHR) %>% summarize(center=( max(BPcum) + min(BPcum) ) / 2 )
+
+sig <- 5e-8
+# Make the plot
+manhattan <- ggplot(don, aes(x=BPcum, y=-log10(P))) +
+    geom_hline(yintercept = -log10(sig), color = "grey40", linetype = "dashed") +
+    
+    # Show all points
+    geom_point( aes(color=as.factor(CHR)), alpha=1, size=0.6) +
+    scale_color_manual(values = rep(c("blue", "green4"), 22 )) +
+    
+    # custom X axis:
+    scale_x_continuous(label = axisdf$CHR, breaks= axisdf$center ) +
+    scale_y_continuous(expand = c(0, 0),limits = c(y_min, y_max)) +     # remove space between plot area and x axis
+
+    # Add highlighted points
+    geom_point(data=subset(don, is_highlight=="yes"), size=1.5, shape=23, fill="orangered", color="darkred") +
+
+    # Custom the theme:
+    theme_bw() +
+    theme( 
+      legend.position="none",
+      panel.border = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      axis.text.x = element_text(size = 6)
+    )+
+  labs(x = "Chromosome")
+# Save the ggplot as a file
+ggsave("nonp_manhattan_plots/BIPnonP_manhatten.png", manhattan,width = 7.29, height = 4.5, units = "in", dpi = 300)
+```
+
+# for ADHD
+```{r}
+gwasResults <- fread('./nonp_residuals_sumstats/ADHD_nonp_gwas_results.txt')
+independenthit <- fread('./nonp_ld_clumping/CLUMP_ADHDnonp_gwase_sig_independent_signals_New.txt')
+snpsOfInterest <- as.list(independenthit[,1])
+snpsOfInterest <- snpsOfInterest$V1
+
+# Make the Manhattan plot on the gwasResults dataset
+#manhattan(gwasResults, chr="CHR", bp="BP", snp="RS", p="P" , highlight = snpsOfInterest, cex=0.4, col = c('blue4', 'orange3'))
+
+# List of SNPs to highlight are in the snpsOfInterest object
+# We will use ggrepel for the annotation
+  
+# Prepare the dataset
+don <- gwasResults %>% 
+  mutate(CHR = as.numeric(CHR)) %>%
+  mutate(BP = as.numeric(BP)) %>% 
+  # Compute chromosome size
+  group_by(CHR) %>% 
+  summarise(chr_len=max(BP))  %>%
+  # Calculate cumulative position of each chromosome
+  mutate(tot=cumsum(chr_len)-chr_len) %>%
+  select(-chr_len) %>%
+  
+  # Add this info to the initial dataset
+  left_join(gwasResults, ., by=c("CHR"="CHR")) %>%
+  
+  # Add a cumulative position of each SNP
+  arrange(CHR, BP) %>%
+  mutate( BPcum=BP+tot) %>%
+
+  # Add highlight and annotation information
+  mutate( is_highlight=ifelse(SNP %in% snpsOfInterest, "yes", "no"))
+
+# Prepare X axis
+axisdf <- don %>% group_by(CHR) %>% summarize(center=( max(BPcum) + min(BPcum) ) / 2 )
+
+sig <- 5e-8
+# Make the plot
+manhattan <- ggplot(don, aes(x=BPcum, y=-log10(P))) +
+    geom_hline(yintercept = -log10(sig), color = "grey40", linetype = "dashed") +
+    
+    # Show all points
+    geom_point( aes(color=as.factor(CHR)), alpha=1, size=0.6) +
+    scale_color_manual(values = rep(c("blue", "green4"), 22 )) +
+    
+    # custom X axis:
+    scale_x_continuous(label = axisdf$CHR, breaks= axisdf$center ) +
+    scale_y_continuous(expand = c(0, 0),limits = c(y_min, y_max)) +     # remove space between plot area and x axis
+
+    # Add highlighted points
+    geom_point(data=subset(don, is_highlight=="yes"), size=1.5, shape=23, fill="orangered", color="darkred") +
+
+    # Custom the theme:
+    theme_bw() +
+    theme( 
+      legend.position="none",
+      panel.border = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      axis.text.x = element_text(size = 6)
+    )+
+  labs(x = "Chromosome")
+# Save the ggplot as a file
+ggsave("nonp_manhattan_plots/ADHDnonP_manhatten.png", manhattan,width = 7.29, height = 4.5, units = "in", dpi = 300)
+```
+
+# for MDD
+```{r}
+gwasResults <- fread('./nonp_residuals_sumstats/MDD_nonp_gwas_results.txt')
+independenthit <- fread('./nonp_ld_clumping/CLUMP_MDDnonp_gwase_sig_independent_signals_New.txt')
+snpsOfInterest <- as.list(independenthit[,1])
+snpsOfInterest <- snpsOfInterest$V1
+
+# Make the Manhattan plot on the gwasResults dataset
+#manhattan(gwasResults, chr="CHR", bp="BP", snp="RS", p="P" , highlight = snpsOfInterest, cex=0.4, col = c('blue4', 'orange3'))
+
+# List of SNPs to highlight are in the snpsOfInterest object
+# We will use ggrepel for the annotation
+  
+# Prepare the dataset
+don <- gwasResults %>% 
+  mutate(CHR = as.numeric(CHR)) %>%
+  mutate(BP = as.numeric(BP)) %>% 
+  # Compute chromosome size
+  group_by(CHR) %>% 
+  summarise(chr_len=max(BP))  %>%
+  # Calculate cumulative position of each chromosome
+  mutate(tot=cumsum(chr_len)-chr_len) %>%
+  select(-chr_len) %>%
+  
+  # Add this info to the initial dataset
+  left_join(gwasResults, ., by=c("CHR"="CHR")) %>%
+  
+  # Add a cumulative position of each SNP
+  arrange(CHR, BP) %>%
+  mutate( BPcum=BP+tot)%>%
+
+  # Add highlight and annotation information
+  mutate( is_highlight=ifelse(SNP %in% snpsOfInterest, "yes", "no"))
+
+# Prepare X axis
+axisdf <- don %>% group_by(CHR) %>% summarize(center=( max(BPcum) + min(BPcum) ) / 2 )
+
+sig <- 5e-8
+# Make the plot
+manhattan <- ggplot(don, aes(x=BPcum, y=-log10(P))) +
+    geom_hline(yintercept = -log10(sig), color = "grey40", linetype = "dashed") +
+    
+    # Show all points
+    geom_point( aes(color=as.factor(CHR)), alpha=1, size=0.6) +
+    scale_color_manual(values = rep(c("blue", "green4"), 22 )) +
+    
+    # custom X axis:
+    scale_x_continuous(label = axisdf$CHR, breaks= axisdf$center ) +
+    scale_y_continuous(expand = c(0, 0),limits = c(y_min, y_max)) +     # remove space between plot area and x axis
+
+    # Add highlighted points
+    geom_point(data=subset(don, is_highlight=="yes"), size=2, shape=23, fill="orangered", color="darkred") +
+
+    # Custom the theme:
+    theme_bw() +
+    theme( 
+      legend.position="none",
+      panel.border = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      axis.text.x = element_text(size = 6)
+    )+
+  labs(x = "Chromosome")
+# Save the ggplot as a file
+
+ggsave("nonp_manhattan_plots/MDDnonP_manhatten.png", manhattan,width = 7.29, height = 4.5, units = "in", dpi = 300)
+```
+
+# for ANX
+```{r}
+gwasResults <- fread('./nonp_residuals_sumstats/ANX_nonp_gwas_results.txt')
+#independenthit <- fread('../ldpruning/CLUMP_ANXnonp_gwase_sig_independent_signals_New.txt')
+#snpsOfInterest <- as.list(independenthit[,1])
+#snpsOfInterest <- snpsOfInterest$V1
+
+# Make the Manhattan plot on the gwasResults dataset
+#manhattan(gwasResults, chr="CHR", bp="BP", snp="RS", p="P" , highlight = snpsOfInterest, cex=0.4, col = c('blue4', 'orange3'))
+
+# List of SNPs to highlight are in the snpsOfInterest object
+# We will use ggrepel for the annotation
+  
+# Prepare the dataset
+don <- gwasResults %>% 
+  mutate(CHR = as.numeric(CHR)) %>%
+  mutate(BP = as.numeric(BP)) %>% 
+  # Compute chromosome size
+  group_by(CHR) %>% 
+  summarise(chr_len=max(BP))  %>%
+  # Calculate cumulative position of each chromosome
+  mutate(tot=cumsum(chr_len)-chr_len) %>%
+  select(-chr_len) %>%
+  
+  # Add this info to the initial dataset
+  left_join(gwasResults, ., by=c("CHR"="CHR")) %>%
+  
+  # Add a cumulative position of each SNP
+  arrange(CHR, BP) %>%
+  mutate( BPcum=BP+tot)
+
+  # Add highlight and annotation information
+  #mutate( is_highlight=ifelse(SNP %in% snpsOfInterest, "yes", "no"))
+
+# Prepare X axis
+axisdf <- don %>% group_by(CHR) %>% summarize(center=( max(BPcum) + min(BPcum) ) / 2 )
+
+sig <- 5e-8
+# Make the plot
+manhattan <- ggplot(don, aes(x=BPcum, y=-log10(P))) +
+    geom_hline(yintercept = -log10(sig), color = "grey40", linetype = "dashed") +
+    
+    # Show all points
+    geom_point( aes(color=as.factor(CHR)), alpha=1, size=0.6) +
+    scale_color_manual(values = rep(c("blue", "green4"), 22 )) +
+    
+    # custom X axis:
+    scale_x_continuous(label = axisdf$CHR, breaks= axisdf$center ) +
+    scale_y_continuous(expand = c(0, 0),limits = c(y_min, y_max)) +     # remove space between plot area and x axis
+
+    # Add highlighted points
+    #geom_point(data=subset(don, is_highlight=="yes"), size=2, shape=23, fill="orangered", color="darkred") +
+
+    # Custom the theme:
+    theme_bw() +
+    theme( 
+      legend.position="none",
+      panel.border = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      axis.text.x = element_text(size = 6)
+    )+
+  labs(x = "Chromosome")
+# Save the ggplot as a file
+ggsave("nonp_manhattan_plots/ANXnonP_manhatten.png", manhattan,width = 7.29, height = 4.5, units = "in", dpi = 300)
+```
+
+
+# for PTSD
+```{r}
+gwasResults <- fread('./nonp_residuals_sumstats/PTSD_nonp_gwas_results.txt')
+#independenthit <- fread('../ldpruning/CLUMP_PTSDnonp_gwase_sig_independent_signals_New.txt')
+#snpsOfInterest <- as.list(independenthit[,1])
+#snpsOfInterest <- snpsOfInterest$V1
+
+# Make the Manhattan plot on the gwasResults dataset
+#manhattan(gwasResults, chr="CHR", bp="BP", snp="RS", p="P" , highlight = snpsOfInterest, cex=0.4, col = c('blue4', 'orange3'))
+
+# List of SNPs to highlight are in the snpsOfInterest object
+# We will use ggrepel for the annotation
+  
+# Prepare the dataset
+don <- gwasResults %>% 
+  mutate(CHR = as.numeric(CHR)) %>%
+  mutate(BP = as.numeric(BP)) %>% 
+  # Compute chromosome size
+  group_by(CHR) %>% 
+  summarise(chr_len=max(BP))  %>%
+  # Calculate cumulative position of each chromosome
+  mutate(tot=cumsum(chr_len)-chr_len) %>%
+  select(-chr_len) %>%
+  
+  # Add this info to the initial dataset
+  left_join(gwasResults, ., by=c("CHR"="CHR")) %>%
+  
+  # Add a cumulative position of each SNP
+  arrange(CHR, BP) %>%
+  mutate( BPcum=BP+tot)
+
+  # Add highlight and annotation information
+  #mutate( is_highlight=ifelse(SNP %in% snpsOfInterest, "yes", "no"))
+
+# Prepare X axis
+axisdf <- don %>% group_by(CHR) %>% summarize(center=( max(BPcum) + min(BPcum) ) / 2 )
+
+sig <- 5e-8
+# Make the plot
+manhattan <- ggplot(don, aes(x=BPcum, y=-log10(P))) +
+    geom_hline(yintercept = -log10(sig), color = "grey40", linetype = "dashed") +
+    
+    # Show all points
+    geom_point( aes(color=as.factor(CHR)), alpha=1, size=0.6) +
+    scale_color_manual(values = rep(c("blue", "green4"), 22 )) +
+    
+    # custom X axis:
+    scale_x_continuous(label = axisdf$CHR, breaks= axisdf$center ) +
+    scale_y_continuous(expand = c(0, 0),limits = c(y_min, y_max)) +     # remove space between plot area and x axis
+
+    # Add highlighted points
+    #geom_point(data=subset(don, is_highlight=="yes"), size=2, shape=23, fill="orangered", color="darkred") +
+
+    # Custom the theme:
+    theme_bw() +
+    theme( 
+      legend.position="none",
+      panel.border = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      axis.text.x = element_text(size = 6)
+    )+
+  labs(x = "Chromosome")
+# Save the ggplot as a file
+ggsave("nonp_manhattan_plots/PTSDnonP_manhatten.png", manhattan,width = 7.29, height = 4.5, units = "in", dpi = 300)
+```
+
+
+# for ALCH
+```{r}
+gwasResults <- fread('./nonp_residuals_sumstats/ALCH_nonp_gwas_results.txt')
+independenthit <- fread('./nonp_ld_clumping/CLUMP_ALCHnonp_gwase_sig_independent_signals_New.txt')
+snpsOfInterest <- as.list(independenthit[,1])
+snpsOfInterest <- snpsOfInterest$V1
+
+# Make the Manhattan plot on the gwasResults dataset
+#manhattan(gwasResults, chr="CHR", bp="BP", snp="RS", p="P" , highlight = snpsOfInterest, cex=0.4, col = c('blue4', 'orange3'))
+
+# List of SNPs to highlight are in the snpsOfInterest object
+# We will use ggrepel for the annotation
+  
+# Prepare the dataset
+don <- gwasResults %>% 
+  mutate(CHR = as.numeric(CHR)) %>%
+  mutate(BP = as.numeric(BP)) %>% 
+  # Compute chromosome size
+  group_by(CHR) %>% 
+  summarise(chr_len=max(BP))  %>%
+  # Calculate cumulative position of each chromosome
+  mutate(tot=cumsum(chr_len)-chr_len) %>%
+  select(-chr_len) %>%
+  
+  # Add this info to the initial dataset
+  left_join(gwasResults, ., by=c("CHR"="CHR")) %>%
+  
+  # Add a cumulative position of each SNP
+  arrange(CHR, BP) %>%
+  mutate( BPcum=BP+tot) %>%
+
+  # Add highlight and annotation information
+  mutate( is_highlight=ifelse(SNP %in% snpsOfInterest, "yes", "no"))
+
+# Prepare X axis
+axisdf <- don %>% group_by(CHR) %>% summarize(center=( max(BPcum) + min(BPcum) ) / 2 )
+
+sig <- 5e-8
+# Make the plot
+manhattan <- ggplot(don, aes(x=BPcum, y=-log10(P))) +
+    geom_hline(yintercept = -log10(sig), color = "grey40", linetype = "dashed") +
+    
+    # Show all points
+    geom_point( aes(color=as.factor(CHR)), alpha=1, size=0.6) +
+    scale_color_manual(values = rep(c("blue", "green4"), 22 )) +
+    
+    # custom X axis:
+    scale_x_continuous(label = axisdf$CHR, breaks= axisdf$center ) +
+    scale_y_continuous(expand = c(0, 0), limits = c(y_min, y_max)) +     # remove space between plot area and x axis
+
+    # Add highlighted points
+    geom_point(data=subset(don, is_highlight=="yes"), size=1.5, shape=23, fill="orangered", color="darkred") +
+
+    # Custom the theme:
+    theme_bw() +
+    theme( 
+      legend.position="none",
+      panel.border = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      axis.text.x = element_text(size = 6)
+    )+
+  labs(x = "Chromosome")
+# Save the ggplot as a file
+ggsave("nonp_manhattan_plots/ALCHnonP_manhatten.png", manhattan,width = 7.29, height = 4.5, units = "in", dpi = 300)
+```
+# for ASD
+```{r}
+gwasResults <- fread('./nonp_residuals_sumstats/ASD_nonp_gwas_results.txt')
+independenthit <- fread('./nonp_ld_clumping/CLUMP_ASDnonp_gwase_sig_independent_signals_New.txt')
+snpsOfInterest <- as.list(independenthit[,1])
+snpsOfInterest <- snpsOfInterest$V1
+
+# Make the Manhattan plot on the gwasResults dataset
+#manhattan(gwasResults, chr="CHR", bp="BP", snp="RS", p="P" , highlight = snpsOfInterest, cex=0.4, col = c('blue4', 'orange3'))
+
+# List of SNPs to highlight are in the snpsOfInterest object
+# We will use ggrepel for the annotation
+  
+# Prepare the dataset
+don <- gwasResults %>% 
+  mutate(CHR = as.numeric(CHR)) %>%
+  mutate(BP = as.numeric(BP)) %>% 
+  # Compute chromosome size
+  group_by(CHR) %>% 
+  summarise(chr_len=max(BP))  %>%
+  # Calculate cumulative position of each chromosome
+  mutate(tot=cumsum(chr_len)-chr_len) %>%
+  select(-chr_len) %>%
+  
+  # Add this info to the initial dataset
+  left_join(gwasResults, ., by=c("CHR"="CHR")) %>%
+  
+  # Add a cumulative position of each SNP
+  arrange(CHR, BP) %>%
+  mutate( BPcum=BP+tot) %>%
+
+  # Add highlight and annotation information
+  mutate( is_highlight=ifelse(SNP %in% snpsOfInterest, "yes", "no"))
+
+# Prepare X axis
+axisdf <- don %>% group_by(CHR) %>% summarize(center=( max(BPcum) + min(BPcum) ) / 2 )
+
+sig <- 5e-8
+# Make the plot
+manhattan <- ggplot(don, aes(x=BPcum, y=-log10(P))) +
+    geom_hline(yintercept = -log10(sig), color = "grey40", linetype = "dashed") +
+    
+    # Show all points
+    geom_point( aes(color=as.factor(CHR)), alpha=1, size=0.6) +
+    scale_color_manual(values = rep(c("blue", "green4"), 22 )) +
+    
+    # custom X axis:
+    scale_x_continuous(label = axisdf$CHR, breaks= axisdf$center ) +
+    scale_y_continuous(expand = c(0, 0), limits = c(y_min, y_max)) +     # remove space between plot area and x axis
+
+    # Add highlighted points
+    geom_point(data=subset(don, is_highlight=="yes"), size=2, shape=23, fill="orangered", color="darkred") +
+
+    # Custom the theme:
+    theme_bw() +
+    theme( 
+      legend.position="none",
+      panel.border = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      axis.text.x = element_text(size = 6)
+    )+
+  labs(x = "Chromosome")
+# Save the ggplot as a file
+ggsave("nonp_manhattan_plots/ASDnonP_manhatten.png", manhattan,width = 7.29, height = 4.5, units = "in", dpi = 300)
+```
+
+# for OCD
+```{r}
+gwasResults <- fread('./nonp_residuals_sumstats/OCD_nonp_gwas_results.txt')
+#independenthit <- fread('./ldpruning/CLUMP_OCDnonp_gwase_sig_independent_signals_New.txt')
+#snpsOfInterest <- as.list(independenthit[,1])
+#snpsOfInterest <- snpsOfInterest$V1
+
+# Make the Manhattan plot on the gwasResults dataset
+#manhattan(gwasResults, chr="CHR", bp="BP", snp="RS", p="P" , highlight = snpsOfInterest, cex=0.4, col = c('blue4', 'orange3'))
+
+# List of SNPs to highlight are in the snpsOfInterest object
+# We will use ggrepel for the annotation
+  
+# Prepare the dataset
+don <- gwasResults %>% 
+  mutate(CHR = as.numeric(CHR)) %>%
+  mutate(BP = as.numeric(BP)) %>% 
+  # Compute chromosome size
+  group_by(CHR) %>% 
+  summarise(chr_len=max(BP))  %>%
+  # Calculate cumulative position of each chromosome
+  mutate(tot=cumsum(chr_len)-chr_len) %>%
+  select(-chr_len) %>%
+  
+  # Add this info to the initial dataset
+  left_join(gwasResults, ., by=c("CHR"="CHR")) %>%
+  
+  # Add a cumulative position of each SNP
+  arrange(CHR, BP) %>%
+  mutate( BPcum=BP+tot)
+
+  # Add highlight and annotation information
+  #mutate( is_highlight=ifelse(SNP %in% snpsOfInterest, "yes", "no"))
+
+# Prepare X axis
+axisdf <- don %>% group_by(CHR) %>% summarize(center=( max(BPcum) + min(BPcum) ) / 2 )
+
+sig <- 5e-8
+# Make the plot
+manhattan <- ggplot(don, aes(x=BPcum, y=-log10(P))) +
+    geom_hline(yintercept = -log10(sig), color = "grey40", linetype = "dashed") +
+    
+    # Show all points
+    geom_point( aes(color=as.factor(CHR)), alpha=1, size=0.6) +
+    scale_color_manual(values = rep(c("blue", "green4"), 22 )) +
+    
+    # custom X axis:
+    scale_x_continuous(label = axisdf$CHR, breaks= axisdf$center ) +
+    scale_y_continuous(expand = c(0, 0), limits = c(y_min, y_max)) +     # remove space between plot area and x axis
+
+    # Add highlighted points
+    #geom_point(data=subset(don, is_highlight=="yes"), size=2, shape=23, fill="orangered", color="darkred") +
+
+    # Custom the theme:
+    theme_bw() +
+    theme( 
+      legend.position="none",
+      panel.border = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      axis.text.x = element_text(size = 6)
+    )+
+  labs(x = "Chromosome")
+# Save the ggplot as a file
+ggsave("nonp_manhattan_plots/OCDnonP_manhatten.png", manhattan,width = 7.29, height = 4.5, units = "in", dpi = 300)
+```
+
+# for AN
+```{r}
+gwasResults <- fread('./nonp_residuals_sumstats/AN_nonp_gwas_results.txt')
+independenthit <- fread('./nonp_ld_clumping/CLUMP_ANnonp_gwase_sig_independent_signals_New.txt')
+snpsOfInterest <- as.list(independenthit[,1])
+snpsOfInterest <- snpsOfInterest$V1
+
+# Make the Manhattan plot on the gwasResults dataset
+#manhattan(gwasResults, chr="CHR", bp="BP", snp="RS", p="P" , highlight = snpsOfInterest, cex=0.4, col = c('blue4', 'orange3'))
+
+# List of SNPs to highlight are in the snpsOfInterest object
+# We will use ggrepel for the annotation
+  
+# Prepare the dataset
+don <- gwasResults %>% 
+  mutate(CHR = as.numeric(CHR)) %>%
+  mutate(BP = as.numeric(BP)) %>% 
+  # Compute chromosome size
+  group_by(CHR) %>% 
+  summarise(chr_len=max(BP))  %>%
+  # Calculate cumulative position of each chromosome
+  mutate(tot=cumsum(chr_len)-chr_len) %>%
+  select(-chr_len) %>%
+  
+  # Add this info to the initial dataset
+  left_join(gwasResults, ., by=c("CHR"="CHR")) %>%
+  
+  # Add a cumulative position of each SNP
+  arrange(CHR, BP) %>%
+  mutate( BPcum=BP+tot) %>%
+
+  # Add highlight and annotation information
+  mutate( is_highlight=ifelse(SNP %in% snpsOfInterest, "yes", "no"))
+
+# Prepare X axis
+axisdf <- don %>% group_by(CHR) %>% summarize(center=( max(BPcum) + min(BPcum) ) / 2 )
+
+sig <- 5e-8
+# Make the plot
+manhattan <- ggplot(don, aes(x=BPcum, y=-log10(P))) +
+    geom_hline(yintercept = -log10(sig), color = "grey40", linetype = "dashed") +
+    
+    # Show all points
+    geom_point( aes(color=as.factor(CHR)), alpha=1, size=0.6) +
+    scale_color_manual(values = rep(c("blue", "green4"), 22 )) +
+    
+    # custom X axis:
+    scale_x_continuous(label = axisdf$CHR, breaks= axisdf$center ) +
+    scale_y_continuous(expand = c(0, 0), limits = c(y_min, y_max)) +     # remove space between plot area and x axis
+
+    # Add highlighted points
+    geom_point(data=subset(don, is_highlight=="yes"), size=1.5, shape=23, fill="orangered", color="darkred") +
+
+    # Custom the theme:
+    theme_bw() +
+    theme( 
+      legend.position="none",
+      panel.border = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      axis.text.x = element_text(size = 6)
+    )+
+  labs(x = "Chromosome")
+# Save the ggplot as a file
+ggsave("nonp_manhattan_plots/ANnonP_manhatten.png",manhattan,width = 7.29, height = 4.5, units = "in", dpi = 300)
+```
+# for TS
+```{r}
+gwasResults <- fread('./nonp_residuals_sumstats/TS_nonp_gwas_results.txt')
+#independenthit <- fread('../ldpruning/CLUMP_TSnonp_gwase_sig_independent_signals_New.txt')
+#snpsOfInterest <- as.list(independenthit[,1])
+#snpsOfInterest <- snpsOfInterest$V1
+
+# Make the Manhattan plot on the gwasResults dataset
+#manhattan(gwasResults, chr="CHR", bp="BP", snp="RS", p="P" , highlight = snpsOfInterest, cex=0.4, col = c('blue4', 'orange3'))
+
+# List of SNPs to highlight are in the snpsOfInterest object
+# We will use ggrepel for the annotation
+  
+# Prepare the dataset
+don <- gwasResults %>% 
+  mutate(CHR = as.numeric(CHR)) %>%
+  mutate(BP = as.numeric(BP)) %>% 
+  # Compute chromosome size
+  group_by(CHR) %>% 
+  summarise(chr_len=max(BP))  %>%
+  # Calculate cumulative position of each chromosome
+  mutate(tot=cumsum(chr_len)-chr_len) %>%
+  select(-chr_len) %>%
+  
+  # Add this info to the initial dataset
+  left_join(gwasResults, ., by=c("CHR"="CHR")) %>%
+  
+  # Add a cumulative position of each SNP
+  arrange(CHR, BP) %>%
+  mutate( BPcum=BP+tot)
+
+  # Add highlight and annotation information
+  #mutate( is_highlight=ifelse(SNP %in% snpsOfInterest, "yes", "no"))
+
+# Prepare X axis
+axisdf <- don %>% group_by(CHR) %>% summarize(center=( max(BPcum) + min(BPcum) ) / 2 )
+
+sig <- 5e-8
+# Make the plot
+manhattan <- ggplot(don, aes(x=BPcum, y=-log10(P))) +
+    geom_hline(yintercept = -log10(sig), color = "grey40", linetype = "dashed") +
+    
+    # Show all points
+    geom_point( aes(color=as.factor(CHR)), alpha=1, size=0.6) +
+    scale_color_manual(values = rep(c("blue", "green4"), 22 )) +
+    
+    # custom X axis:
+    scale_x_continuous(label = axisdf$CHR, breaks= axisdf$center ) +
+    scale_y_continuous(expand = c(0, 0),limits = c(y_min, y_max)) +     # remove space between plot area and x axis
+
+    # Add highlighted points
+    #geom_point(data=subset(don, is_highlight=="yes"), size=2, shape=23, fill="orangered", color="darkred") +
+
+    # Custom the theme:
+    theme_bw() +
+    theme( 
+      legend.position="none",
+      panel.border = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      axis.text.x = element_text(size = 6)
+    )+
+  labs(x = "Chromosome")
+# Save the ggplot as a file
+ggsave("nonp_manhattan_plots/TSnonP_manhatten.png", manhattan,width = 7.29, height = 4.5, units = "in", dpi = 300)
+```
+

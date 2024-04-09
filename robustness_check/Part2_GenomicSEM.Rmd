@@ -1,0 +1,220 @@
+---
+Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
+Title of the script: "Part2_GenomicSEM"
+author: "Wangjingyi Liao & Engin Keser"
+date: "2023-11-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+library(formatR)
+knitr::opts_chunk$set(eval = FALSE)
+
+
+```
+
+STEP 2: Data preparation for GenomicSEM: munge and ldsc
+
+```{R}
+#load in GenomicSEM and required packages
+require(GenomicSEM)
+
+#set working direcotry to where all raw summary statistics were kept
+setwd("/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/")
+
+############################################################################################################
+####STEP 1: munge() ###
+############################################################################################################
+#create vector of the names of the summary statistics files
+files <- c("scz_withneff.txt",
+           "bip_withneff.txt",
+           "adhd_withneff.txt",
+           "mdd_withneff.txt", 
+           "anx_withneff.txt",
+           "ptsd_withneffperSNP.txt",
+           "alch_withtotaln.txt", 
+           "asd_withneff.txt", 
+           "ocd_withneff.txt", 
+           "an_withneff.txt",
+           "ts_withneff.txt")
+
+
+
+#define the reference file being used to allign alleles across summary stats, this is the hapmap3 reference panel which has less SNP but better LD estimation apparently. 
+hm3<-"../raw_data/eur_w_ld_chr/w_hm3.snplist"
+
+#name the traits 
+trait.names <- c("SCZ", 
+                 "BIP", 
+                 "ADHD",
+                 "MDD", 
+                 "ANX", 
+                 "PTSD", 
+                 "ALCH", 
+                 "ASD", 
+                 "OCD", 
+                 "AN", 
+                 "TS")
+
+
+#list the sample sizes. Its NA if the SNP level effective sample was included in the file
+N=c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA)
+
+
+#define the imputation quality filter
+info.filter=0.9
+
+#define the MAF filter
+maf.filter=0.01
+
+#run munge, summary statistics will be munged with the reference file and saved as xxx.sumstats.gz in the current work dir. 
+munge(files=files,hm3=hm3,trait.names=trait.names,N=N,info.filter=info.filter,maf.filter=maf.filter)
+
+############################################################################################################
+###step 2: ldsc() ###
+###obtain the genetic covariance (S) matrix & corresponding sampling covariance matrix (V)
+############################################################################################################
+setwd("/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/")
+#vector of munged summary statistics
+traits <- c("SCZ.sumstats.gz", 
+            "BIP.sumstats.gz", 
+            "ADHD.sumstats.gz", 
+            "MDD.sumstats.gz", 
+            "ANX.sumstats.gz",
+            "PTSD.sumstats.gz", 
+            "ALCH.sumstats.gz", 
+            "ASD.sumstats.gz", 
+            "OCD.sumstats.gz", 
+            "AN.sumstats.gz", 
+            "TS.sumstats.gz")
+
+#sample.prev: A vector of sample prevalences of length equal to the number of traits. 
+#Sample prevalence is calculated as the number of cases over the total number of participants (i.e., cases + controls). 
+#Possible range = 0-1. HOWEVER, if you have access to the sum of effective sample sizes then this should be entered for 
+#munge in the prior step and sample prevalence should be entered as 0.5. If the trait is continuous, the values should equal NA.
+#enter sample prevalence of .5 to reflect that all traits were munged using the sum of effective sample size
+sample.prev <- c(.5, .5, .5, .5, .5, .5, NA, .5, .5, .5, .5)
+
+#These estimates can be obtained from a number of sources, such as large scale epidemiological studies. Possible range = 0-1. 
+#Again, if the trait is continuous the values should equal NA.
+#we first used the prevalence rates from more recent Grotzinger publication (https://pubmed.ncbi.nlm.nih.gov/35973856/), but got inflated h2 so reverted back to 
+#Grotzinger 2022 paper pop prevalence
+population.prev <- c(.01, .02, 0.05, 0.21, 0.2, 0.3, NA, 0.012, 0.025, 0.009, 0.008)
+
+#A folder of LD scores used as the independent variable in LDSC (ld) and LDSC weights (wld).
+ld <- "../raw_data/eur_w_ld_chr/"
+wld <- "../raw_data/eur_w_ld_chr/"
+
+#since the trait names are the same with previous step, this line is commented 
+trait.names <- trait.names
+
+#run LDSC
+LDSCoutput<-ldsc(traits=traits,sample.prev=sample.prev,population.prev=population.prev,ld=ld,wld=wld,trait.names=trait.names)
+
+
+#check covariance matrix (on the liability scale for case/control designs)
+#View(LDSCoutput$S)
+
+#save the ldsc output as a .RData file for later use
+save(LDSCoutput, file= "/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/LDSC_11traits.RData")
+save(LDSCoutput, file= "/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/LDSC_11traits.RData")
+```
+
+
+```{r}
+
+############################################################################################################
+### fit common factor model without SNPs
+############################################################################################################
+setwd("/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/")
+
+load("./LDSC_11traits.RData")
+
+require(GenomicSEM)
+require(lavaan)
+
+
+# run using DWLS
+CommonFactor_DWLS <- commonfactor(covstruc = LDSCoutput, estimation= "DWLS")
+
+#print output
+CommonFactor_DWLS
+
+# run using ML
+CommonFactor_ML <- commonfactor(covstruc = LDSCoutput, estimation= "ML")
+
+#print output
+CommonFactor_ML
+
+
+#save output
+save(CommonFactor_DWLS, file="ModelwithoutSNP_11traits.Rdata" )
+
+```
+
+
+```{r}
+############################################################################################################
+###step 3: run sumstats() to prepare the summary statistics for GWAS
+############################################################################################################
+#should be the same as the name of the files used for the munge function in Step 1 above and the files should be in the same listed order used for the ldsc function in step 2. therefore this line is commentted 
+setwd("/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/")
+files <- files
+
+#for sumstats() the reference panel changed to 1000g becuase it include more SNPs
+ref= "../raw_data/reference.1000G.maf.0.005.txt.gz"
+
+
+#same trait names in the same order as above, therefore this line is commented
+trait.names <- trait.names
+
+#N is Neff, same as before
+N=N
+
+#Whether the SEs are on a logistic scale. 
+se.logit=c(T, T, T, T, T, T, F, T, T, T, T)
+
+OLS=c(F, F, F, F, F, F, T, F, F, F, F)
+#Whether the phenotype was a dichotomous outcome for which there are only Z-statistics in the summary statistics file -or- it was a dichotomous outcome analyzed using an OLS estimator,
+linprob=c(F, F, F, F, F, F, F, F, F, F, F)
+
+
+#same threshold, therefore commented
+#info.filter=.6
+#maf.filter=0.01
+
+#running sumstats
+sumstats <-sumstats(files=files,ref=ref,trait.names=trait.names,
+                      se.logit=se.logit,OLS=OLS,linprob=linprob,
+                      info.filter=info.filter,
+                      maf.filter=maf.filter,keep.indel=FALSE,parallel=TRUE,cores=100, N=N)
+
+#save the cleaned SNP data to a r.data file for GWAS analysis
+save(sumstats, file="/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/P_sumstats_11traits.RData")
+```
+
+create_chunk_universal.R script is used to subset the SNPs to be included in one chunk. 
+it takes two argument: the sumstats and wkdir
+it divide the number of SNP the sumstats have by 10,000 and create a row_chunk.csv file list the begin and end row of the chunk. 
+e.g. 1, 100000
+     100001,200000
+So for each job, the script will only analysis 100000 SNPs.
+
+```{r, file='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/script/create_chunk_universal.R'}
+```
+
+Rscript ../script/create_chunk_universal.R P_sumstats_11traits.RData ./
+
+after the row_chunk.csv is created, the arrary_geneSEM.sh script will automatically read the chunk file and tell the genomicSEM script what to analysis
+
+Then the LDSC outputs and Sumstats will be used in the GWAS
+```{bash, file = '/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/array_genomicSEM_P.sh'}
+```
+
+```{r, file='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/P_genomicSEM_meta.R'}
+```
+
+
+run the Part3_Nonp_merge.Rmd to merge the results
+

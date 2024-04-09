@@ -1,0 +1,186 @@
+---
+Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
+Title of the script: "Part4_LDSCnonp"
+author: "Wangjingyi Liao & Engin Keser"
+date: "2023-11-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+
+```{r}
+
+setwd("/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/")
+library(GenomicSEM)
+############################################################################################################
+####STEP 1: munge() ###
+############################################################################################################
+#create vector of the names of the summary statistics files
+files <- c("SCZ_nonp_gwas_results.txt",
+           "BIP_nonp_gwas_results.txt",
+           "ADHD_nonp_gwas_results.txt",
+           "MDD_nonp_gwas_results.txt", 
+           "ANX_nonp_gwas_results.txt",
+           "PTSD_nonp_gwas_results.txt",
+           "ALCH_nonp_gwas_results.txt", 
+           "ASD_nonp_gwas_results.txt", 
+           "OCD_nonp_gwas_results.txt", 
+           "AN_nonp_gwas_results.txt",
+           "TS_nonp_gwas_results.txt")
+
+#define the reference file being used to allign alleles across summary stats, this is the hapmap3 reference panel which has less SNP but better LD estimation apparently. 
+hm3<-"/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/eur_w_ld_chr/w_hm3.snplist"
+
+#name the traits 
+trait.names <- c("SCZnonp", 
+                 "BIPnonp", 
+                 "ADHDnonp",
+                 "MDDnonp", 
+                 "ANXnonp", 
+                 "PTSDnonp", 
+                 "ALCHnonp", 
+                 "ASDnonp", 
+                 "OCDnonp", 
+                 "ANnonp", 
+                 "TSnonp")
+
+#list the sample sizes. Its NA if the SNP level effective sample was included in the file
+N=c(76976, 69443, 70996, 199983, 31787, 29574, 327706, 34514, 5754, 35212, 9590)
+
+'
+[1] "Number of rows in SCZ : 3746806 76976.4285916118"                                                                               
+[1] "Number of rows in BIP : 3746806 69443.0026535736"                                                                               
+[1] "Number of rows in ADHD : 3746806 70996.7619806661"                                                                              
+[1] "Number of rows in MDD : 3746806 199983.606758885"                                                                               
+[1] "Number of rows in ANX : 3746806 31787.4966502116"                                                                               
+[1] "Number of rows in PTSD : 3746806 29574.9979023655"
+[1] "Number of rows in ALCH : 3746806 327706.565047883"    
+[1] "Number of rows in ASD : 3746806 34514.5637515647"                                                                               
+[1] "Number of rows in OCD : 3746806 5754.95036135044"      
+[1] "Number of rows in AN : 3746806 35212.0061400656"                                                                                
+[1] "Number of rows in TS : 3746806 9590.39597121959" 
+
+
+'
+
+
+#define the imputation quality filter
+info.filter=0.9
+
+#define the MAF filter
+maf.filter=0.01
+
+#run munge, summary statistics will be munged with the reference file and saved as xxx.sumstats.gz in the current work dir. 
+munge(files=files,hm3=hm3,trait.names=trait.names,N=N,info.filter=info.filter,maf.filter=maf.filter)
+
+############################################################################################################
+###step 2: ldsc() ###
+###obtain the genetic covariance (S) matrix & corresponding sampling covariance matrix (V)
+############################################################################################################
+
+#vector of munged summary statistics
+traits <- c("SCZnonp.sumstats.gz", 
+            "BIPnonp.sumstats.gz", 
+            "ADHDnonp.sumstats.gz", 
+            "MDDnonp.sumstats.gz", 
+            "ANXnonp.sumstats.gz",
+            "PTSDnonp.sumstats.gz", 
+            "ALCHnonp.sumstats.gz", 
+            "ASDnonp.sumstats.gz", 
+            "OCDnonp.sumstats.gz", 
+            "ANnonp.sumstats.gz", 
+            "TSnonp.sumstats.gz")
+
+#sample.prev: A vector of sample prevalences of length equal to the number of traits. 
+#Sample prevalence is calculated as the number of cases over the total number of participants (i.e., cases + controls). 
+#Possible range = 0-1. HOWEVER, if you have access to the sum of effective sample sizes then this should be entered for 
+#munge in the prior step and sample prevalence should be entered as 0.5. If the trait is continuous, the values should equal NA.
+#enter sample prevalence of .5 to reflect that all traits were munged using the sum of effective sample size
+sample.prev <- c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA)
+
+#These estimates can be obtained from a number of sources, such as large scale epidemiological studies. Possible range = 0-1. 
+#Again, if the trait is continuous the values should equal NA.
+population.prev <- c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA)
+
+#A folder of LD scores used as the independent variable in LDSC (ld) and LDSC weights (wld).
+ld <- "/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/eur_w_ld_chr/"
+wld <- "/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/eur_w_ld_chr/"
+
+#since the trait names are the same with previous step, this line is commented 
+trait.names <- trait.names
+
+#run LDSC
+LDSCoutput<-ldsc(traits=traits,sample.prev=sample.prev,population.prev=population.prev,ld=ld,wld=wld,trait.names=trait.names)
+
+
+#check covariance matrix (on the liability scale for case/control designs)
+#View(LDSCoutput$S)
+
+#save the ldsc output as a .RData file for later use
+save(LDSCoutput, file= "/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/LDSC_11nonp.RData")
+
+
+```
+
+```{r}
+load('LDSC_11nonp.RData')
+
+##standardise covariance matrix
+#Step 1: Extract covariance and correlation matrix
+covmatrix <- LDSCoutput$S
+cormatrix <- round(cov2cor(LDSCoutput$S), digits= 3)
+
+
+
+###=======CREATE THE PLOT=======###
+#install.packages("corrplot")
+library(corrplot)
+library(ggplot2)
+
+#rownames(cormatrix) <- c("SCZ", "BIP", "ADHD", "MDD", "ANX","PTSD", "ALCH", "ASD", "OCD", "AN", "TS")
+
+colnames(cormatrix) <- c("SCZ", "BIP", "ADHD", "MDD", "ANX","PTSD", "ALCH", "ASD", "OCD", "AN", "TS")
+
+#for non-p plot 
+rownames(cormatrix) <- c("SCZ nonp", "BIP nonp", "ADHD nonp", "MDD nonp", "ANX nonp", "PTSD nonp", "ALCH nonp", "ASD nonp", "OCD nonp", "AN nonp", "TS nonp")
+
+################################
+###create correlation matrix
+
+plot <- corrplot(cormatrix, # Correlation matrix
+         method = "color", # Correlation plot method e.g., color, circle
+         type = "lower",    # Correlation plot style (also "upper" and "lower")
+         diag = TRUE,      # If TRUE (default), adds the diagonal
+         tl.col = "black", # Labels color
+         title = "", # Main title
+         addCoef.col = "black", # Add correlation coefficient
+         tl.cex = 0.5, #label size
+         number.cex = 0.5, #corr coefficient size
+         tl.srt = 45, #rotation of text labels) 
+         cl.pos="n")
+
+
+write.csv(cormatrix, 'LDSC_withintrait_nonpresults.csv')
+
+#remove the legend
+#cl.pos="n"
+#legend on the right
+#cl.pos="r"
+#change legend
+
+
+#for the p plot
+load('LDSC_11traits.RData')
+covmatrix <- LDSCoutput$S
+cormatrix <- round(cov2cor(LDSCoutput$S), digits= 3)
+colnames(cormatrix) <- c("SCZ", "BIP", "ADHD", "MDD", "ANX","PTSD", "ALCH", "ASD", "OCD", "AN", "TS")
+rownames(cormatrix) <- c("SCZ", "BIP", "ADHD", "MDD", "ANX", "PTSD", "ALCH", "ASD", "OCD", "AN", "TS")
+write.csv(cormatrix, 'LDSC_withintrait_original_results.csv')
+
+
+
+```
+

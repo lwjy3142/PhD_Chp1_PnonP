@@ -1,0 +1,340 @@
+---
+title: "Part 5 - LDSC with external trait"
+author: "Wangjingyi Liao"
+date: "2024-02-14"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+1. LDSC and jack knife corrected genetic correlation comparision - script adapted from Joni Coleman.
+
+check the /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/ldsc_nonp_externaltrait_residuals folder
+
+useage:
+  1. munge summary statistics for external traits and save them to the munged_external_binary and munged_External_count folder, binary and continuous traits will be analysed separately. 
+  2. munged original summary statistics uncorrected for p and non-p summary statistics saved to the p_sumstats and non-p_sumstats folder
+  3. cd to the ldsc directory
+  4. open the WrapperScript.sh file and edit the working directories and folder names 
+  5. submit the sh file using: sh WrapperScript.sh
+  6. individual outputs will be saved in to the jf_results folder and LDSC log files will be saved into Logs folder
+
+2. Figure 3-4 - genetic correlation with external trait
+
+
+```{r}
+library(tidyverse)
+library(reshape2)
+
+```
+
+```{r}
+rm (list = ls())
+
+# Load necessary libraries
+library(data.table)
+library(dplyr)
+
+# Read data from the CSV file into the data frame 'external_rgs'
+setwd('/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/ldsc_nonp_externaltrait_residuals/ldsc/')
+# Read the file using fread and skip lines with empty cells
+external_rgs <- fread('./p_nonp_allexternal_traits_ldsc.txt', fill = T)
+
+# Remove rows with NA
+rgs <- na.omit(external_rgs)
+
+```
+
+```{r}
+head(rgs)
+class(rgs$ExternalTrait)
+rgs$ext_tr<- as.factor(rgs$ExternalTrait)
+levels(rgs$ext_tr)
+
+# #use the code below to rename the levels to look consistent and interpretable
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="Age_at_smoking_initiation"] <- "Age at smoking initiation"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="Menopause"] <- "Age at menopause"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="birth_weight" ] <- "Birth weight"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="Childhood_IQ" ] <- "Childhood IQ"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="cigday" ] <- "Cigarette per day"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="drinkweek" ] <- "Drink per week"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="EA4" ] <- "Education attainment"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="executivefunctioning" ] <- "Executive function"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="household_income" ] <- "Household income"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="intelligence2"] <- "Cognitive performance"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="lonelines"] <- "Lonelines"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="longevity"] <- "Longevity"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="Metabolic_Syndrome"] <- "Metabolic syndrome"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="neighbourhood_deprivation"] <- "Neighbourhood deprivation"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="no_sexual_partners"] <- "Number of sexual partners"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="Risk_beh_composite"] <- "Risk behavior composite"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="risk_tolerance"] <- "Risk tolerance"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="selfrated_health"] <- "Self-rated poor health"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="sleepduration"] <- "Sleep duration"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="Speeding_propensity"] <- "Speeding propensity"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="subjective_wellbeing"] <- "Subjective well-being"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="Tiredness"] <- "Tiredness"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="Waist_to_hip_ratio"] <- "Waist to hip ratio"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="environmentalstress"] <- "Environmental stress"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="noncog"] <- "Noncognitive skills"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="internalizing"] <- "Internalizing problem"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="externalizing"] <- "Externalizing problem"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="neurodegenerative"] <- "Neurodegenerative disorders"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="backpain"] <- "Back pain"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="insomnia"] <- "Insomnia"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="CUD"] <- "Cannabis use disorder"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="ever_smoker"] <- "Ever smoker"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="Smoking_cessation"] <- "Smoking cessationn"
+levels(rgs$ext_tr)[levels(rgs$ext_tr)=="chronotype"] <- "Chronotype"
+
+# FDR correction for the correction comparision 
+# FDR correction for the correction comparision 
+rgs$fdr_jf_p <- p.adjust(rgs$jf_p, method = "fdr") #  146 significant results
+
+# Subset rgs with fdr_jf_p < 0.05
+rgs_sig_fdr <- rgs[rgs$fdr_jf_p < 0.05, ]
+
+order <- as.character(sort(levels(rgs$ext_tr)))
+
+rgs$ext_tr <- factor(rgs$ext_tr, levels = order)
+
+## Define categories (loosely based on the GWAS-by-subtraction but changes made in order to fit sum stats availability)
+demographic<- c("Household income", 
+                "Neighbourhood deprivation",
+                "Longevity")
+health<-c("Risk behavior composite",
+          "Risk tolerance",
+          "Speeding propensity",
+          "Number of sexual partners" ,  
+          "Ever smoker",
+          "Drinks per week", 
+          "Sleep duration" ,
+          "Number of sexual partners",
+          "Age at smoking initiation", 
+          "Chronotype", 
+          "Cigarette per day",
+          "Diabetes T2",
+          "Drink per week" ,
+          "Metabolic syndrome",
+          "Self-rated poor health",
+          "Neurodegenerative disorders",
+          "Back pain",  
+          "Age at menopause", 
+          "Smoking cessationn")
+psychological<- c("Childhood IQ",
+                  "Noncognitive skills",
+                  "Education attainment",
+                  "Executive function",
+                  "Neuroticism",
+                  "Environmental stress",
+                  "Subjective well-being", 
+                  "Tiredness", 
+                  "Cognitive performance",
+                  "Lonelines",
+                  "Internalizing problem",
+                  "Externalizing problem",
+                  "Insomnia", 
+                  "Cannabis use disorder")
+antropometric<-c("Birth weight", 
+                 "Waist to hip ratio"
+                 )
+
+
+
+# add a column with the category name 
+rgs$category <- NULL
+rgs$category[rgs$ext_tr %in% health] <- "Health related"
+rgs$category[rgs$ext_tr %in% psychological] <- "Psychological"
+rgs$category[rgs$ext_tr %in% demographic] <- "Demographic"
+rgs$category[rgs$ext_tr %in% antropometric] <- "Anthropometric"
+
+## To fix the order of the groups and traits 
+rgs$category_f <- factor(rgs$category, levels=c("Demographic", "Anthropometric","Health related","Psychological")) 
+
+rgs$disorder <- rgs$Trait
+
+datl <- rgs
+```
+
+
+
+
+```{r}
+###Health-related traits###
+
+
+health <- datl[which(datl$category_f%in% c("Health related")), ] 
+
+#nudge <- position_nudge(x = -1, y = 0)
+nudge1 <- position_nudge(x = .1, y = 0)
+nudge2 <- position_nudge(x = -.1, y = 0)
+
+rghealth<- ggplot(health, aes(y=nonp_cor, x=reorder(ext_tr, desc(ext_tr)))) + 
+  scale_colour_manual(name="Data", values=c("0" = "#060b5c","1" = "#66CDAA", "2" = "red"), labels = c("Uncorrected for p", "Non-p", "FDR-corrected \nsignificant difference \nbetween pairs of correlations")) + #need trick with both values and labels and number to order the legend.....
+  scale_shape_manual(name="Data", values=c("0" =16,"1" =16, "2" =8), labels = c("Uncorrected for p", "Non-p", "FDR-corrected \nsignificant difference \nbetween pairs of correlations")) +
+  geom_point(aes(y=p_cor, x=reorder(ext_tr, desc(ext_tr)),color="0", shape="0"), size=3, position = nudge1) +
+  geom_errorbar(aes(ymin=p_cor-1.96*p_cor_se, ymax=p_cor+1.96*p_cor_se,color="0"), width=.1, show.legend=FALSE, position = nudge1) +
+  geom_point(aes(y=nonp_cor, x=reorder(ext_tr, desc(ext_tr)),color="1", shape="1"), size=3, position = nudge2)+
+  geom_errorbar(aes(ymin=nonp_cor-1.96*nonp_cor_se, ymax=nonp_cor+1.96*nonp_cor_se,color="1"), width=.1, show.legend=FALSE, position = nudge2) +
+  geom_point(data = health[health$fdr_jf_p < .05, ],size=2, aes(y = -.90, x = reorder(ext_tr, desc(ext_tr)), color="2",shape = '2')) + # star to indicate the significance of the difference 
+  ylim(-1, 1) +
+  geom_hline(yintercept = 0) +
+  theme_light(base_size=14) +
+  theme(axis.title.x=element_blank(),
+        #axis.title.y=element_blank(),
+        legend.title=element_blank()) +
+  ylab("Genetic Correlation") +
+  xlab("")+
+  theme(legend.position="bottom") +
+  facet_grid(. ~ category_f, scales = "free", space = "free_y") +
+  coord_flip() 
+  #scale_x_discrete(limits = rev)# flip y and x 
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1))  # adjust the x axis text 45 degree
+
+
+rghealth1 = rghealth+facet_wrap(vars(disorder), ncol = 6)+
+  theme(strip.text = element_text(size=10, colour = 'black', face = "bold"),
+      strip.background = element_rect(colour="gray", fill="white"))
+
+
+plot(rghealth1)
+
+ggsave(rghealth1, file="/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/ldsc_nonp_externaltrait_residuals/figures_ldsc/p_nonp_rgs_health.tiff", width=13, height=11)
+
+```
+
+###Psychological traits###
+```{r}
+psychol <- datl[which(datl$category_f%in% c("Psychological")), ] 
+dim(psychol)
+psychol<-psychol[!(psychol$ExternalTrait=="Cog_demange"),]
+dim(psychol)
+#nudge <- position_nudge(x = -1, y = 0)
+nudge1 <- position_nudge(x = .1, y = 0)
+nudge2 <- position_nudge(x = -.1, y = 0)
+
+rgpsych<- ggplot(psychol, aes(y=nonp_cor, x=reorder(ext_tr, desc(ext_tr)))) + 
+  scale_colour_manual(name="Data", values=c("0" = "#060b5c","1" = "#66CDAA", "2" = "red"), labels = c("Uncorrected for p", "Non-p", "FDR-corrected \nsignificant difference \nbetween pairs of correlations")) + #need trick with both values and labels and number to order the legend.....
+  scale_shape_manual(name="Data", values=c("0" =16,"1" =16, "2" =8), labels = c("Uncorrected for p", "Non-p", "FDR-corrected \nsignificant difference \nbetween pairs of correlations")) +
+  geom_point(aes(y=p_cor, x=reorder(ext_tr, desc(ext_tr)),color="0", shape="0"), size=3, position = nudge1) +
+  geom_errorbar(aes(ymin=p_cor-1.96*p_cor_se, ymax=p_cor+1.96*p_cor_se,color="0"), width=.1, show.legend=FALSE, position = nudge1) +
+  geom_point(aes(y=nonp_cor, x=reorder(ext_tr, desc(ext_tr)),color="1", shape="1"), size=3, position = nudge2)+
+  geom_errorbar(aes(ymin=nonp_cor-1.96*nonp_cor_se, ymax=nonp_cor+1.96*nonp_cor_se,color="1"), width=.1, show.legend=FALSE, position = nudge2) +
+  geom_point(data = psychol[psychol$fdr_jf_p < .05, ],size=2, aes(y = -.90, x = reorder(ext_tr, desc(ext_tr)), color="2",shape = '2')) + # star to indicate the significance of the difference 
+  ylim(-1, 1.2) +
+  geom_hline(yintercept = 0) +
+  theme_light(base_size=14) +
+  theme(axis.title.x=element_blank(),
+        #axis.title.y=element_blank(),
+        legend.title=element_blank()) +
+  ylab("Genetic Correlation") +
+  xlab("")+
+  theme(legend.position="bottom") +
+  facet_grid(. ~ category_f, scales = "free", space = "free_y") +
+  coord_flip() # flip y and x 
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1))  # adjust the x axis text 45 degree
+
+
+rgpsych1 = rgpsych+facet_wrap(vars(disorder), ncol = 6)+
+  theme(strip.text = element_text(size=10, colour = 'black', face = "bold"),
+      strip.background = element_rect(colour="gray", fill="white"))
+
+
+plot(rgpsych1)
+
+ggsave(rgpsych1, file="/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/ldsc_nonp_externaltrait_residuals/figures_ldsc/p_nonp_rgs_psychological.tiff", width=13, height=11)
+
+```
+
+```{r}
+demographic <- datl[which(datl$category_f%in% c("Demographic")), ] 
+demographic <- demographic %>% 
+  arrange(ext_tr)
+
+#nudge <- position_nudge(x = -1, y = 0)
+nudge1 <- position_nudge(x = .1, y = 0)
+nudge2 <- position_nudge(x = -.1, y = 0)
+
+fig_demographic <- ggplot(demographic, aes(y=nonp_cor, x=reorder(ext_tr, desc(ext_tr)))) + 
+  scale_colour_manual(name="Data", values=c("0" = "#060b5c","1" = "#66CDAA", "2" = "red"), labels = c("Uncorrected for p", "Non-p", "FDR-corrected \nsignificant difference \nbetween pairs of correlations")) + #need trick with both values and labels and number to order the legend.....
+  scale_shape_manual(name="Data", values=c("0" =16,"1" =16, "2" =8), labels = c("Uncorrected for p", "Non-p", "FDR-corrected \nsignificant difference \nbetween pairs of correlations")) +
+  geom_point(aes(y=p_cor, x=reorder(ext_tr, desc(ext_tr)),color="0", shape="0"), size=3, position = nudge1) +
+  geom_errorbar(aes(ymin=p_cor-1.96*p_cor_se, ymax=p_cor+1.96*p_cor_se,color="0"), width=.1, show.legend=FALSE, position = nudge1) +
+  geom_point(aes(y=nonp_cor, x=reorder(ext_tr, desc(ext_tr)),color="1", shape="1"), size=3, position = nudge2)+
+  geom_errorbar(aes(ymin=nonp_cor-1.96*nonp_cor_se, ymax=nonp_cor+1.96*nonp_cor_se,color="1"), width=.1, show.legend=FALSE, position = nudge2) +
+  geom_point(data = demographic[demographic$fdr_jf_p < .05, ],size=2, aes(y = -.90, x = reorder(ext_tr, desc(ext_tr)), color="2",shape = "2")) + # star to indicate the significance of the difference 
+  ylim(-1, 1) +
+  geom_hline(yintercept = 0) +
+  theme_light(base_size=14) +
+  theme(axis.title.x=element_blank(),
+        #axis.title.y=element_blank(),
+        legend.title=element_blank()) +
+  ylab("Genetic Correlation") +
+  xlab("")+
+  theme(legend.position="bottom") +
+  facet_grid(. ~ category_f, scales = "free", space = "free_y") +
+  coord_flip() 
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1))  # adjust the x axis text 45 degree
+
+
+fig_demographic1 = fig_demographic+facet_wrap(vars(disorder), ncol = 6)+
+  theme(strip.text = element_text(size=10, colour = 'black', face = "bold"),
+      strip.background = element_rect(colour="gray", fill="white"))
+
+
+plot(fig_demographic1)
+
+ggsave(fig_demographic1, file="/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/ldsc_nonp_externaltrait_residuals/figures_ldsc/p_nonp_rgs_demographic.tiff", width=13, height=9)
+
+```
+
+
+```{r}
+anthro <- datl[which(datl$category_f%in% c("Anthropometric")), ] 
+
+#nudge <- position_nudge(x = -1, y = 0)
+nudge1 <- position_nudge(x = .2, y = 0)
+nudge2 <- position_nudge(x = -.2, y = 0)
+
+rganthro<- ggplot(anthro, aes(y=nonp_cor, x=reorder(ext_tr, desc(ext_tr)))) + 
+  scale_colour_manual(name="Data", values=c("0" = "#060b5c","1" = "#66CDAA", "2" = "red"), labels = c("Uncorrected for p", "Non-p", "FDR-corrected \nsignificant difference \nbetween pairs of correlations")) + #need trick with both values and labels and number to order the legend.....
+  scale_shape_manual(name="Data", values=c("0" =16,"1" =16, "2" =8), labels = c("Uncorrected for p", "Non-p", "FDR-corrected \nsignificant difference \nbetween pairs of correlations")) +
+  geom_point(aes(y=p_cor, x=reorder(ext_tr, desc(ext_tr)),color="0", shape="0"), size=3, position = nudge1) +
+  geom_errorbar(aes(ymin=p_cor-1.96*p_cor_se, ymax=p_cor+1.96*p_cor_se,color="0"), width=.1, show.legend=FALSE, position = nudge1) +
+  geom_point(aes(y=nonp_cor, x=reorder(ext_tr, desc(ext_tr)),color="1", shape="1"), size=3, position = nudge2)+
+  geom_errorbar(aes(ymin=nonp_cor-1.96*nonp_cor_se, ymax=nonp_cor+1.96*nonp_cor_se,color="1"), width=.1, show.legend=FALSE, position = nudge2) +
+  geom_point(data = anthro[anthro$fdr_jf_p < .05, ],size=2, aes(y = -.90, x = reorder(ext_tr, desc(ext_tr)), color="2",shape = '2')) + # star to indicate the significance of the difference 
+  ylim(-1, 1) +
+  geom_hline(yintercept = 0) +
+  theme_light(base_size=14) +
+  theme(axis.title.x=element_blank(),
+        #axis.title.y=element_blank(),
+        legend.title=element_blank()) +
+  ylab("Genetic Correlation") +
+  xlab("")+
+  theme(legend.position="bottom") +
+  facet_grid(. ~ category_f, scales = "free", space = "free_y") +
+  coord_flip() 
+  #guides(size="none", shape="none")# flip y and x 
+  #theme(axis.text.x = element_text(angle = 45, hjust = 1))  # adjust the x axis text 45 degree
+
+
+rganthro1 = rganthro+facet_wrap(vars(disorder), ncol = 6)+
+  theme(strip.text = element_text(size=10, colour = 'black', face = "bold"),
+      strip.background = element_rect(colour="gray", fill="white"))
+
+
+plot(rganthro1)
+
+
+ggsave(rganthro1, file="/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/ldsc_nonp_externaltrait_residuals/figures_ldsc/p_nonp_rgs_anthropometric.tiff", width=11, height=7)
+
+```
+
+
+
+

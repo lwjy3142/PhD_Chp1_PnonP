@@ -1,0 +1,338 @@
+---
+Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
+Title of the script: "Part1_sumstats_preparation"
+author: "Wangjingyi Liao & Engin Keser"
+date: "2023-11-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+library(formatR)
+knitr::opts_chunk$set(eval = FALSE)
+
+
+```
+
+```{R}
+#SCZ
+
+scz <- fread('raw_data/SCZ/PGC3_SCZ_wave3.european.autosome.public.v3.vcf.tsv.gz')
+
+
+scz$Neff<- scz$NEFF*2
+#this is also the number reported by grozinger et al 2022
+#in the supplementary material it says Neff is NEFF devided by 2. But the readme file says the NEFF is total effective sample size. however when we calculate the neff by cohort, the neff*2 get closer to the real NEFF. 
+
+scz$NEFF <- NULL
+
+fwrite(scz, 'genomicSEM/scz_withneff.txt', sep = '\t', col.names = T)
+
+#the following text was found in the paper: 'In each individual cohort, association testing was based on an additive logistic regression model using PLINK'.
+
+scz$p_imputed <- 2*pnorm((abs(scz$BETA)/scz$SE), lower.tail = F)
+cor(scz$PVAL, scz$p_imputed)
+
+#the imputed p value according to GenomicSEM wiki's formular matched 99% with the p value they provided. that suggests the SE they provided is the SE of BETA, not OR. Therefore the parameters should be: 
+#se.logit: T
+#ols: F
+#linprob: F
+```
+
+```{R}
+#BIP
+
+bip <- fread('raw_data/BIP/pgc-bip2021-all.vcf.tsv.gz')
+
+bip$Neff <- bip$NEFFDIV2*2
+
+bip$NEFFDIV2 <- NULL
+
+fwrite(bip, 'genomicSEM/bip_withneff.txt', sep = '\t', col.names = T)
+
+
+#the following text was found in the readme and method: For PGC cohorts, GWAS were conducted within each cohort using an additive logistic regression model in PLINK v1.90.
+
+bip$p_imputed <- 2*pnorm((abs(bip$BETA)/bip$SE), lower.tail = F)
+cor(bip$PVAL, bip$p_imputed)
+
+#the imputed p value according to GenomicSEM wiki's formular matched 99% with the p value they provided. that suggests the SE they provided is the SE of BETA, not OR. Therefore the parameters should be: 
+#se.logit: T
+#ols: F
+#linprob: F
+
+```
+
+
+```{R}
+#ADHD
+
+adhd <- fread('raw_data/ADHD/ADHD_meta_Jan2022_iPSYCH1_iPSYCH2_deCODE_PGC.meta.gz', data.table = T)
+
+##read in information about sample size per cohort
+adhdcohort<-read.csv("raw_data/ADHD/ADHDcohorts.csv",header=TRUE)
+
+#calculate sample prevalence for each cohort
+adhdcohort$v<-adhdcohort$cases/(adhdcohort$cases+adhdcohort$controls)
+
+#calculate cohort specific effective sample size
+adhdcohort$EffN<-4*adhdcohort$v*(1-adhdcohort$v)*(adhdcohort$cases+adhdcohort$controls)
+
+#calculate sum of effective sample size:103135.5
+adhdcohort_effN <- sum(adhdcohort$EffN)
+
+adhd$Neff <- adhdcohort_effN
+
+fwrite(adhd, file = 'genomicSEM/adhd_withneff.txt', sep = '\t')
+
+# in the readme file it says the SE: Standard error of the log(OR)
+# in the paper it says all analysis was conduced suing logistic regression
+# se.logit: T
+# ols: F
+# linprob: F
+
+```
+
+
+```{R}
+#asd
+
+asd <- fread('raw_data/ASD/iPSYCH-PGC_ASD_Nov2017', data.table = F)
+
+#18,382 cases, 27,969 controls
+#OR Odds ratio for the effect of the A1 allele
+#SE Standard error of the log(OR)
+
+#we take the number from Gronziger downward bias paper, but we don't know how they calculated it. 43778
+
+asd$Neff <- 43778
+
+#output the summary stats with the SNP-specific effective sample size column
+fwrite(asd, file = "genomicSEM/asd_withneff.txt", sep = "\t")
+
+
+#in the paper they meta-analysed ipsych and PGC, both using logistric regression.
+# they reported OR and se of log(OR)
+# in the google form somone asked question about the ASD in genomicSEM. TFF was used. 
+# se.logit: T
+# ols: F
+# linprob: F
+
+```
+
+```{R}
+#mdd
+
+mdd <- fread('raw_data/MDD/PGC_UKB_depression_genome-wide.txt.gz')
+
+#convert allele frequency column to minor allele frequency for effective sample size calculation below
+mdd$MAF<-ifelse(mdd$Freq > .5, 1-mdd$Freq, mdd$Freq)
+
+#remove Freq column now that we have created MAF column
+mdd$Freq<-NULL
+
+#calculate SNP-specific sum of effective sample size
+mdd$Neff<-4/((2*mdd$MAF*(1-mdd$MAF))*mdd$StdErrLogOR^2)
+
+#calculate total effective N to cap backed out Neff
+#these are the case control numbers from table 1 of Howard et al. (2019)
+#note that these numbers exclude 23andMe
+Ncases<-127552+43204
+Ncontrols<-233763+95680
+v<-Ncases/(Ncases+Ncontrols)
+TotalNeff<-4*v*(1-v)*(Ncases+Ncontrols)
+
+#cap at 1.1 of total effective N
+mdd$Neff<-ifelse(mdd$Neff > 1.1*TotalNeff, 1.1*TotalNeff, mdd$Neff)
+
+#lower limit of 0.5 of total effective N
+mdd$Neff<-ifelse(mdd$Neff < 0.5*TotalNeff, 0.5*TotalNeff, mdd$Neff)
+
+#output the updated MDD file
+fwrite(mdd, file = "genomicSEM/mdd_withneff.txt", sep = "\t")
+
+
+#in the paper they meta-analysed pgc and ukbb, both using log(OR) and SE of log(OR) to meta-analysis
+# they reported OR and se of log(OR) in the summary statistics
+# in the google form somone asked question about the MDD in genomicSEM. TFF was used. 
+# se.logit: T
+# ols: F
+# linprob: F
+
+```
+
+
+```{R}
+#ocd
+
+ocd <- fread('raw_data/OCD/ocd_aug2017.gz')
+ocdcohort<-read.csv("raw_data/OCD/OCDcohorts.csv",header=TRUE)
+
+#calculate sample prevalence for each cohort
+ocdcohort$v<-ocdcohort$cases/(ocdcohort$cases+ocdcohort$controls)
+
+#calculate cohort specific effective sample size
+ocdcohort$EffN<-4*ocdcohort$v*(1-ocdcohort$v)*(ocdcohort$cases+ocdcohort$controls)
+
+#calculate sum of effective sample size:103135.5
+ocdcohort_effN <- sum(ocdcohort$EffN)
+
+ocd$Neff <- ocdcohort_effN
+
+fwrite(ocd, file = 'genomicSEM/ocd_withneff.txt', sep = '\t')
+
+# in the readme: OR:Odds ratio for the effect of the A1 allele, SE: Standard error of the log(OR)
+# confirmed in the google form
+# se.logit: T
+# ols: F
+# linprob: F
+```
+
+
+```{R}
+#TS 
+
+ts <- fread('raw_data/TS/TS_Oct2018.gz')
+tscohort<-read.csv("raw_data/TS/Tourettecohorts.csv",header=TRUE)
+
+#calculate sample prevalence for each cohort
+tscohort$v<-tscohort$cases/(tscohort$cases+tscohort$controls)
+
+#calculate cohort specific effective sample size
+tscohort$EffN<-4*tscohort$v*(1-tscohort$v)*(tscohort$cases+tscohort$controls)
+
+#calculate sum of effective sample size:103135.5
+tscohort_effN <- sum(tscohort$EffN)
+
+ts$Neff <- tscohort_effN
+
+fwrite(ts, file = 'genomicSEM/ts_withneff.txt', sep = '\t')
+
+# in the readme: OR:Odds ratio for the effect of the A1 allele, SE: Standard error of the log(OR)
+# confirmed in the google form
+# se.logit: T
+# ols: F
+# linprob: F
+```
+
+```{R}
+#AN
+
+an <- fread('raw_data/AN/pgcAN2.2019-07.vcf.tsv')
+
+an<- an %>% rename(A2 = REF, A1 = ALT)
+
+an$Neff <- an$NEFFDIV2*2
+
+an$NEFFDIV2 <- NULL
+
+fwrite(an, 'genomicSEM/an_withneff.txt', sep = '\t')
+
+
+ancohort <- data.frame(cohort = c('chop','fin1','fre1','gns2','itgr','net1','poco','spa1','ukd1','usa1','w1to6','w7','w8','w9','w10','w11','w12','w13','w14','w15','w16','w17','w18','w19','w20','w21','w22','w23','w24','aunz','usa2','sedk','ukbb'), 
+                       cases = c(1032,130,293,657,144,348,239,184,242,418,357,97,162,180,156,164,176,181,169,185,174,158,245,211,200,161,211,164,1241,2536,1304,4105,768), 
+                       controls =c(3568,503,990,2263,129,1337,604,156,957,750,4828,831,1062,1021,714,754,785,789,761,818,800,761,852,851,802,801,845,957,1447,15624,1307,3793,3065))
+
+#calculate sample prevalence for each cohort
+ancohort$v<-ancohort$cases/(ancohort$cases+ancohort$controls)
+
+#calculate cohort specific effective sample size
+ancohort$EffN<-4*ancohort$v*(1-ancohort$v)*(ancohort$cases+ancohort$controls)
+
+#calculate sum of effective sample size:46321.9
+ancohort_effN <- sum(ancohort$EffN)
+
+#AN Neff was reported in grozinger et al 2022 and the number was checked using the number calcualted using cohort information
+# se.logit: T
+# ols: F
+# linprob: F
+
+```
+
+```{R}
+
+#alch
+
+alch <- fread('raw_data/ALCH/MALLARD_ET_AL-2021_AJP-AUDIT_PROBLEMS_FACTOR.txt.gz')
+
+#restrict to MAF of 40% and 10%
+alch2<-subset(alch, alch$MAF <= .4 & alch$MAF >= .1)
+#calculate expected sample size (N_hat)
+N_hat<-mean(1/((2*alch2$MAF*(1-alch2$MAF))*alch2$SE^2))
+
+alch$N <- N_hat
+
+fwrite(alch, 'genomicSEM/alch_withtotaln.txt', sep = '\t')
+
+#in the readme it says:
+#Z      Z statistic (i.e., ratio of est/SE)
+#alch gwas is not case/control, it is a continuous trait. therefore we use the following parameters with total sample size. No prevelance for this
+# se.logit: F
+# ols: T
+# linprob: F
+
+```
+
+```{r}
+
+#ptsd
+
+ptsd <- fread('raw_data/PTSD/pts_eur_freeze2_overall.results.gz')
+
+fwrite(ptsd, file = 'genomicSEM/ptsd_withneffperSNP.txt', sep = '\t')
+
+range(ptsd$Neff)
+#17559.4 70237.5
+#they provide effective sample size per SNP, we are using that column. and the range matches with grozinger et al 2022
+#in the readme: OR Odds ratio, SE Standard error of log OR
+# se.logit: T
+# ols: F
+# linprob: F
+
+```
+#anx
+
+```{R}
+anx <- fread('raw_data/ANX/META_UKBB_iPSYCH_ANGST_wNcol.sumstats.gz')
+
+#read in 1000 genomes reference file used to get approximation of SNP MAF
+#as MAF not present in the anxiety summary statistics file
+ref<-fread("raw_data/reference.1000G.maf.0.005.txt.gz",data.table=FALSE)
+
+#subset reference file to just SNP and MAF
+attach(ref)
+ref<-data.frame(SNP,MAF)
+
+#merge Anxiety and reference file
+anx<-inner_join(anx,ref,by="SNP")
+
+#calculate effective sample size implied by GWAS summary statistics 
+anx$Neff<-4/((2*anx$MAF*(1-anx$MAF))*anx$StdErr^2)
+
+#calculate total effective N to cap backed out Neff
+Ncases<-31977 
+Ncontrols<-82114
+v<-Ncases/(Ncases+Ncontrols)
+TotalNeff<-4*v*(1-v)*(Ncases+Ncontrols)
+
+#cap at 1.1 of total effective N
+anx$Neff<-ifelse(anx$Neff > 1.1*TotalNeff, 1.1*TotalNeff, anx$Neff)
+
+#lower limit of 0.5 of total effective N
+anx$Neff<-ifelse(anx$Neff < 0.5*TotalNeff, 0.5*TotalNeff, anx$Neff)
+
+#remove reference panel MAF from file
+anx$MAF<-NULL
+
+#remove sample size column so munge knows to use Neff column 
+anx$TotalSampleSize<-NULL
+
+#output the summary stats with the SNP-specific effective sample size column
+fwrite(anx, file = "genomicSEM/anx_withneff.txt", sep = "\t")
+
+#it is an example in the github page, and the parameters are
+# se.logit: T
+# ols: F
+# linprob: F
+
+```

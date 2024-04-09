@@ -1,0 +1,723 @@
+---
+title: "P-non-p_Figures_mm"
+author: "Margherita Malanchini"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### SNP heritabilities of psychiatric disorders before accounting for p ###
+```{r, echo = FALSE}
+library(tidyverse)
+library(RColorBrewer)
+
+display.brewer.pal(n = 11, name = 'RdYlBu')
+display.brewer.pal(n = 11, name = 'RdBu')
+df<- read.csv('snp_heritability.csv', header = T, strip.white = T, na.strings = "NA")
+
+#df<- read.csv('/Users/margheritamalanchini/Dropbox/2019 Queen Mary/MM papers 2019/p-non-p/manuscript/Figures/Figure 1_MM/snp_heritability_p.csv', header = T, strip.white = T, na.strings = "NA")
+names(df)
+
+df$traits = as.factor(df$traits)
+
+pd = position_dodge(.5)  
+Figh2p = ggplot(df,aes(x = traits, y= h2, fill = traits)) +
+        geom_bar(stat = "identity", color = "black", width = .8) +
+        geom_errorbar(aes(ymin  = h2-h2_SE, ymax  = h2+h2_SE),width = 0.2,linewidth  = 0.7,
+                    position = pd, 
+                    color = "black") +
+        theme(legend.direction = "vertical",legend.position='none', legend.justification = "left",
+              legend.text = element_text(size = 12), 
+              legend.title = element_blank(),
+              panel.border = element_rect(linetype = 'solid', colour = 'gray',fill = NA),
+              panel.grid.major = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"), 
+              panel.background = element_blank(),
+              panel.grid.minor = element_blank(),
+              plot.title = element_text(size = 14, hjust = 0.5),
+              axis.line.x = element_line(colour = 'gray', size=0.5, linetype='solid'),
+              axis.line.y = element_line(colour = 'gray', size=0.5, linetype='solid'),
+              axis.text.y = element_text(size = 12, colour="black", family = "sans", angle = 0, hjust=0), 
+              axis.text.x = element_text(size = 12, colour="black", family = "sans", angle = 0, hjust=0.5), 
+              axis.ticks.y = element_blank(),
+              axis.title= element_text(size = 12))+
+  ylab("Heritability")+ 
+  ggtitle("SNP heritability of psychiatric disorders \n including transdiagnostic effects")+ 
+  xlab(" ")+
+  ylim(0,.75)
+    #coord_flip()
+    # facet_grid(~corr.type_f)+ theme (strip.text.x = element_text(size=10, face = "bold"),
+    #                               strip.text.y = element_text(size=10, face="bold"),
+    #                               strip.background = element_rect(colour="gray", fill="white"))
+
+Figh2p= Figh2p+ scale_fill_brewer(palette = "RdYlBu")
+plot(Figh2p)
+
+### SNP heritabilities of psychiatric disorders after accounting for transdiagnostic effects (i.e. p) ###
+
+
+Figh2nonp = ggplot(df,aes(x = traits, y= h2_nonp_NEW, fill = traits)) +
+        geom_bar(stat = "identity", color = "black", width = .8) +
+        geom_errorbar(aes(ymin  = h2_nonp_NEW-h2_nonp_SE_NEW, ymax  = h2_nonp_NEW+h2_nonp_SE_NEW),width = 0.2,linewidth  = 0.7,
+                    position = pd, 
+                    color = "black") +
+        theme(legend.direction = "vertical",legend.position='none', legend.justification = "left",
+              legend.text = element_text(size = 12), 
+              legend.title = element_blank(),
+              panel.border = element_rect(linetype = 'solid', colour = 'gray',fill = NA),
+              panel.grid.major = element_line(size = 0.25, linetype = 'solid',
+                                colour = "white"), 
+              panel.background = element_blank(),
+              panel.grid.minor = element_blank(),
+              plot.title = element_text(size = 14, hjust = 0.5),
+              axis.line.x = element_line(colour = 'gray', size=0.5, linetype='solid'),
+              axis.line.y = element_line(colour = 'gray', size=0.5, linetype='solid'),
+              axis.text.y = element_text(size = 12, colour="black", family = "sans", angle = 0, hjust=0), 
+              axis.text.x = element_text(size = 12, colour="black", family = "sans", angle = 0, hjust=0.5), 
+              axis.ticks.y = element_blank(),
+              axis.title= element_text(size = 12))+
+  ylab("Heritability")+ 
+  ggtitle("SNP heritability of psychiatric disorders \n after accounting for transdiagnostic effects")+ 
+  xlab(" ")+
+  ylim(0,.75)
+    #coord_flip()
+    # facet_grid(~corr.type_f)+ theme (strip.text.x = element_text(size=10, face = "bold"),
+    #                               strip.text.y = element_text(size=10, face="bold"),
+    #                               strip.background = element_rect(colour="gray", fill="white"))
+
+Figh2nonp= Figh2nonp+ scale_fill_brewer(palette = "RdYlBu")
+plot(Figh2nonp)
+library(gridExtra)
+viewh2 = grid.arrange(Figh2p, Figh2nonp)
+```
+Bring all the plots in Figure 1 together:
+A. p model
+B. SNP h2 before accounting for transdiagnostic effects (i.e. p)
+C. SNP h2 after accounting for transdiagnostic effects
+
+```{R}
+library(cowplot)
+require(magick)
+
+# leg <- get_legend(b.Ach)
+# b.Ach = b.Ach + theme(legend.position = "none")
+
+Fig1 = ggdraw() +
+draw_image("NEW_model_ppt_WL.png",0, .5,.98,.50)+
+draw_plot(Figh2p, 0, .01, .45, .45)+
+draw_plot(Figh2nonp, 0.5, .01, .45, .45)+
+draw_plot_label(c("A.", "B.", "C."), c(0.01, 0.01, 0.50), c(.97,.49, .49), size = 14)
+
+plot(Fig1)
+
+ggsave(Fig1, file="Fig1_V4.tiff", width= 13, height=10) 
+
+ggsave(Fig1, file="Fig1_V4.png", width= 13, height=9) 
+
+```
+
+
+```{r}
+#### Feb 2024 ####
+####p non-p paper Mol Psych submission --new Figure 2 From matrix to dots and lines ######
+####Author: MM
+
+rm(list = ls())
+library(ggplot2); library(plyr); library(dplyr)
+library(readr); library(tidyr); library(Hmisc)
+library(RColorBrewer); library(reshape2); library (psych)
+library(foreign); library (haven); library(ggsci)
+library(forcats)
+
+p<- read.table(text = "	SCZ	BIP	ADHD	MDD	ANX	PTSD	ALCH	ASD	OCD	AN	TS
+SCZ	1	0.678	0.197	0.335	0.376	0.306	0.222	0.252	0.306	0.23	0.092
+BIP	0.678	1	0.223	0.439	0.416	0.413	0.33	0.208	0.315	0.192	0.089
+ADHD	0.197	0.223	1	0.519	0.469	0.715	0.187	0.428	-0.113	0.076	0.226
+MDD	0.335	0.439	0.519	1	0.901	0.718	0.35	0.35	0.257	0.279	0.218
+ANX	0.376	0.416	0.469	0.901	1	0.627	0.317	0.356	0.373	0.342	0.254
+PTSD	0.306	0.413	0.715	0.718	0.627	1	0.447	0.341	0.067	0.215	-0.094
+ALCH	0.222	0.33	0.187	0.35	0.317	0.447	1	0.208	0.079	0.139	-0.056
+ASD	0.252	0.208	0.428	0.35	0.356	0.341	0.208	1	0.12	0.1	0.132
+OCD	0.306	0.315	-0.113	0.257	0.373	0.067	0.079	0.12	1	0.46	0.426
+AN	0.23	0.192	0.076	0.279	0.342	0.215	0.139	0.1	0.46	1	0.095
+TS	0.092	0.089	0.226	0.218	0.254	-0.094	-0.056	0.132	0.426	0.095	1", header = T)
+
+M2<-as.matrix(p); print(M2)
+colnames(M2)<- c("SCZ",	"BIP",	"ADHD",	"MDD",	"ANX",	"PTSD",	"ALCH",	"ASD",	"OCD", "AN",	"TS")
+rownames(M2)<- c("SCZ",	"BIP",	"ADHD",	"MDD",	"ANX",	"PTSD",	"ALCH",	"ASD",	"OCD", "AN",	"TS")
+
+####Or in ggplot2 so to use the multiplot fuction to create multi-panel plots
+M2[lower.tri(M2)]<-NA; print(M2)
+lpgm2<-melt(M2)
+lpgm2<-data.frame(lpgm2[!is.na(lpgm2[,3]),]) # get rid of the NA matrix entries
+lpgm2$value_lab<-sprintf('%.2f',lpgm2$value)
+print(lpgm2)
+lpgm2$model <- "p"
+print(lpgm2)
+
+##### Non-p LDSC correlations #####
+
+np<- read.table(text = "	SCZ	BIP	ADHD	MDD	ANX	PTSD	ALCH	ASD	OCD	AN	TS
+SCZ	1	0.423	-0.307	-0.813	-0.533	-0.341	-0.152	-0.044	0.085	0.019	-0.073
+BIP	0.423	1	-0.325	-0.643	-0.544	-0.216	-0.007	-0.189	0.088	-0.073	-0.074
+ADHD	-0.307	-0.325	1	-0.077	-0.075	0.503	-0.083	0.224	-0.45	-0.193	0.092
+MDD	-0.813	-0.643	-0.077	1	0.74	0.006	-0.013	-0.175	-0.113	-0.141	0.017
+ANX	-0.533	-0.544	-0.075	0.74	1	0.088	-0.02	-0.028	0.248	0.114	0.032
+PTSD	-0.341	-0.216	0.503	0.006	0.088	1	0.262	0.121	-0.206	-0.006	-0.352
+ALCH	-0.152	-0.007	-0.083	-0.013	-0.02	0.262	1	0.025	-0.017	0.005	-0.229
+ASD	-0.044	-0.189	0.224	-0.175	-0.028	0.121	0.025	1	-0.024	-0.028	0.033
+OCD	0.085	0.088	-0.45	-0.113	0.248	-0.206	-0.017	-0.024	1	0.362	0.363
+AN	0.019	-0.073	-0.193	-0.141	0.114	-0.006	0.005	-0.028	0.362	1	0.072
+TS	-0.073	-0.074	0.092	0.017	0.032	-0.352	-0.229	0.033	0.363	0.072	1", header = T)
+
+M3<-as.matrix(np); print(M3)
+colnames(M3)<- c("SCZ",	"BIP",	"ADHD",	"MDD",	"ANX",	"PTSD",	"ALCH",	"ASD",	"OCD", "AN",	"TS")
+rownames(M3)<- c("SCZ",	"BIP",	"ADHD",	"MDD",	"ANX",	"PTSD",	"ALCH",	"ASD",	"OCD", "AN",	"TS")
+
+####Or in ggplot2 so to use the multiplot fuction to create multi-panel plots
+M3[lower.tri(M3)]<-NA; print(M3)
+lpgm3<-melt(M3)
+lpgm3<-data.frame(lpgm3[!is.na(lpgm3[,3]),]) # get rid of the NA matrix entries
+lpgm3$value_lab<-sprintf('%.2f',lpgm3$value)
+print(lpgm3)
+lpgm3$model <- "non-p"
+print(lpgm3)
+
+### Aggregate the two data sets ###
+data_LDSC <- rbind(lpgm2,lpgm3)
+View(data_LDSC)
+
+write.csv(data_LDSC, './rgs_LDSC_melt.csv', row.names = F, na = 'NA')
+
+####### SELECT one disorder at a time and plot them in order of loading onto the p factr:
+#1.   PTSD .89
+#2.   MDD .84
+#3.   ANX .79
+#4.   BIP .59
+#5.   ADHD .56
+#6.   SCZ .50
+#7.   ASD .45
+#8.   ALCH .41
+#9.   TS .41
+#10.  AN .33
+#11.  OCD .22
+
+
+df = data_LDSC
+
+####### 1. PTSD ########
+
+df1 =   df[df$Var1=="PTSD"|df$Var2=="PTSD", ]
+df1 =   df1[df1$value!= 1.00, ]
+
+df1$disorders<- c("SCZ", "BIP", "ADHD","MDD","ANX","ALCH","ASD","OCD","AN","TS",
+                  "SCZ", "BIP", "ADHD","MDD","ANX","ALCH","ASD","OCD","AN","TS")
+
+df1$disorders = as.factor(df1$disorders)
+df1$value_lab = as.numeric(paste(df1$value_lab))
+
+ptsd <-
+  df1 %>%
+  mutate(disorders = fct_reorder(disorders, value_lab)) %>%
+  ggplot(aes(x=disorders,y=value_lab, color = model, group = model)) +
+  geom_point(size = 2.5, alpha = 1) +
+  geom_line(linewidth = 1, alpha = 1) +
+  theme(legend.direction = "vertical",
+        legend.position="none",
+        plot.title = element_text(size = 19, hjust = 0.5),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 12),
+        panel.border = element_rect(linetype = 'solid', colour = 'gray',fill = NA),
+        panel.background = element_rect(fill = "white",colour = "white",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.25, linetype = 'solid',
+                                        colour = "gray"), 
+        panel.grid.minor = element_line(size = 0.25, linetype = 'solid'),
+        axis.line.x = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.line.y = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.text.y = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.text.x = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.ticks.y = element_blank(),
+        axis.title= element_text(size = 12))+
+  geom_hline(yintercept=0, color = 'black')+
+  ylab("genetic correlations")+
+  xlab(" ")+
+  ggtitle("PTSD")+
+  ylim(-1, 1)
+ptsd= ptsd +scale_color_manual(values =c("#089c85", "#040457"),
+                         #name = "PGS",
+                         labels = c( 'non-p',"uncorrected \n for p"))
+ptsd
+
+#########################################################################################################
+
+                              ####### 2. MDD ########
+
+df1 =   df[df$Var1=="MDD"|df$Var2=="MDD", ]
+df1 =   df1[df1$value!= 1.00, ]
+
+df1$disorders<- c("SCZ", "BIP", "ADHD","ANX","PTSD","ALCH","ASD","OCD","AN","TS",
+                  "SCZ", "BIP", "ADHD","ANX","PTSD","ALCH","ASD","OCD","AN","TS")
+
+df1$disorders = as.factor(df1$disorders)
+df1$value_lab = as.numeric(paste(df1$value_lab))
+
+mdd <-
+  df1 %>%
+  mutate(disorders = fct_reorder(disorders, value_lab)) %>%
+  ggplot(aes(x=disorders,y=value_lab, color = model, group = model)) +
+  geom_point(size = 2.5, alpha = 1) +
+  geom_line(linewidth = 1, alpha = 1) +
+  theme(legend.direction = "vertical",
+        legend.position="none",
+        plot.title = element_text(size = 19, hjust = 0.5),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 12),
+        panel.border = element_rect(linetype = 'solid', colour = 'gray',fill = NA),
+        panel.background = element_rect(fill = "white",colour = "white",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.25, linetype = 'solid',
+                                        colour = "gray"), 
+        panel.grid.minor = element_line(size = 0.25, linetype = 'solid'),
+        axis.line.x = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.line.y = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.text.y = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.text.x = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.ticks.y = element_blank(),
+        axis.title= element_text(size = 12))+
+  geom_hline(yintercept=0, color = 'black')+
+  ylab("genetic correlations")+
+  xlab(" ")+
+  ggtitle("MDD")+
+  ylim(-1, 1)
+mdd= mdd +scale_color_manual(values =c("#089c85", "#040457"),
+                               #name = "PGS",
+                               labels = c( 'non-p',"uncorrected \n for p"))
+mdd
+
+
+#########################################################################################################
+
+####### 3. ANX ########
+
+df1 =   df[df$Var1=="ANX"|df$Var2=="ANX", ]
+df1 =   df1[df1$value!= 1.00, ]
+
+df1$disorders<- c("SCZ", "BIP", "ADHD","MDD","PTSD","ALCH","ASD","OCD","AN","TS",
+                  "SCZ", "BIP", "ADHD","MDD","PTSD","ALCH","ASD","OCD","AN","TS")
+
+df1$disorders = as.factor(df1$disorders)
+df1$value_lab = as.numeric(paste(df1$value_lab))
+
+anx <-
+  df1 %>%
+  mutate(disorders = fct_reorder(disorders, value_lab)) %>%
+  ggplot(aes(x=disorders,y=value_lab, color = model, group = model)) +
+  geom_point(size = 2.5, alpha = 1) +
+  geom_line(linewidth = 1, alpha = 1) +
+  theme(legend.direction = "vertical",
+        legend.position="none",
+        plot.title = element_text(size = 19,hjust = 0.5),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 12),
+        panel.border = element_rect(linetype = 'solid', colour = 'gray',fill = NA),
+        panel.background = element_rect(fill = "white",colour = "white",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.25, linetype = 'solid',
+                                        colour = "gray"), 
+        panel.grid.minor = element_line(size = 0.25, linetype = 'solid'),
+        axis.line.x = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.line.y = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.text.y = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.text.x = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.ticks.y = element_blank(),
+        axis.title= element_text(size = 12))+
+  geom_hline(yintercept=0, color = 'black')+
+  ylab("genetic correlations")+
+  xlab(" ")+
+  ggtitle("ANX")+
+  ylim(-1, 1)
+anx= anx +scale_color_manual(values =c("#089c85", "#040457"),
+                             #name = "PGS",
+                             labels = c( 'non-p',"uncorrected \n for p"))
+anx
+
+#########################################################################################################
+                            ####### 4. BIP  ########
+
+df1 =   df[df$Var1=="BIP"|df$Var2=="BIP", ]
+df1 =   df1[df1$value!= 1.00, ]
+
+df1$disorders<- c("SCZ", "ADHD","MDD","ANX", "PTSD","ALCH","ASD","OCD","AN","TS",
+                  "SCZ", "ADHD","MDD","ANX", "PTSD","ALCH","ASD","OCD","AN","TS")
+
+df1$disorders = as.factor(df1$disorders)
+df1$value_lab = as.numeric(paste(df1$value_lab))
+
+bip <-
+  df1 %>%
+  mutate(disorders = fct_reorder(disorders, value_lab)) %>%
+  ggplot(aes(x=disorders,y=value_lab, color = model, group = model)) +
+  geom_point(size = 2.5, alpha = 1) +
+  geom_line(linewidth = 1, alpha = 1) +
+  theme(legend.direction = "vertical",
+        legend.position="none",
+        plot.title = element_text(size = 19,hjust = 0.5),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 12),
+        panel.border = element_rect(linetype = 'solid', colour = 'gray',fill = NA),
+        panel.background = element_rect(fill = "white",colour = "white",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.25, linetype = 'solid',
+                                        colour = "gray"), 
+        panel.grid.minor = element_line(size = 0.25, linetype = 'solid'),
+        axis.line.x = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.line.y = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.text.y = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.text.x = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.ticks.y = element_blank(),
+        axis.title= element_text(size = 12))+
+  geom_hline(yintercept=0, color = 'black')+
+  ylab("genetic correlations")+
+  xlab(" ")+
+  ggtitle("BIP")+
+  ylim(-1, 1)
+bip= bip +scale_color_manual(values =c("#089c85", "#040457"),
+                             #name = "PGS",
+                             labels = c( 'non-p',"uncorrected \n for p"))
+bip
+
+#########################################################################################################
+####### 5. ADHD ########
+
+df1 =   df[df$Var1=="ADHD"|df$Var2=="ADHD", ]
+df1 =   df1[df1$value!= 1.00, ]
+
+df1$disorders<- c("SCZ", "BIP","MDD","ANX", "PTSD","ALCH","ASD","OCD","AN","TS",
+                  "SCZ", "BIP","MDD","ANX", "PTSD","ALCH","ASD","OCD","AN","TS")
+
+df1$disorders = as.factor(df1$disorders)
+df1$value_lab = as.numeric(paste(df1$value_lab))
+
+adhd <-
+  df1 %>%
+  mutate(disorders = fct_reorder(disorders, value_lab)) %>%
+  ggplot(aes(x=disorders,y=value_lab, color = model, group = model)) +
+  geom_point(size = 2.5, alpha = 1) +
+  geom_line(linewidth = 1, alpha = 1) +
+  theme(legend.direction = "vertical",
+        legend.position="none",
+        plot.title = element_text(size = 19,hjust = 0.5),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 12),
+        panel.border = element_rect(linetype = 'solid', colour = 'gray',fill = NA),
+        panel.background = element_rect(fill = "white",colour = "white",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.25, linetype = 'solid',
+                                        colour = "gray"), 
+        panel.grid.minor = element_line(size = 0.25, linetype = 'solid'),
+        axis.line.x = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.line.y = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.text.y = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.text.x = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.ticks.y = element_blank(),
+        axis.title= element_text(size = 12))+
+  geom_hline(yintercept=0, color = 'black')+
+  ylab("genetic correlations")+
+  xlab(" ")+
+  ggtitle("ADHD")+
+  ylim(-1, 1)
+adhd= adhd +scale_color_manual(values =c("#089c85", "#040457"),
+                             #name = "PGS",
+                             labels = c( 'non-p',"uncorrected \n for p"))
+adhd
+
+#########################################################################################################
+####### 6. SCZ ########
+
+df1 =   df[df$Var1=="SCZ"|df$Var2=="SCZ", ]
+df1 =   df1[df1$value!= 1.00, ]
+
+df1$disorders<- c( "BIP","ADHD","MDD","ANX", "PTSD","ALCH","ASD","OCD","AN","TS",
+                   "BIP","ADHD","MDD","ANX", "PTSD","ALCH","ASD","OCD","AN","TS")
+df1$disorders = as.factor(df1$disorders)
+df1$value_lab = as.numeric(paste(df1$value_lab))
+
+scz <-
+  df1 %>%
+  mutate(disorders = fct_reorder(disorders, value_lab)) %>%
+  ggplot(aes(x=disorders,y=value_lab, color = model, group = model)) +
+  geom_point(size = 2.5, alpha = 1) +
+  geom_line(linewidth = 1, alpha = 1) +
+  theme(legend.direction = "vertical",
+        legend.position="none",
+        plot.title = element_text(size = 19,hjust = 0.5),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 12),
+        panel.border = element_rect(linetype = 'solid', colour = 'gray',fill = NA),
+        panel.background = element_rect(fill = "white",colour = "white",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.25, linetype = 'solid',
+                                        colour = "gray"), 
+        panel.grid.minor = element_line(size = 0.25, linetype = 'solid'),
+        axis.line.x = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.line.y = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.text.y = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.text.x = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.ticks.y = element_blank(),
+        axis.title= element_text(size = 12))+
+  geom_hline(yintercept=0, color = 'black')+
+  ylab("genetic correlations")+
+  xlab(" ")+
+  ggtitle("SCZ")+
+  ylim(-1, 1)
+scz= scz +scale_color_manual(values =c("#089c85", "#040457"),
+                               #name = "PGS",
+                               labels = c( 'non-p',"uncorrected \n for p"))
+scz
+
+#########################################################################################################
+####### 7. ASD ########
+
+df1 =   df[df$Var1=="ASD"|df$Var2=="ASD", ]
+df1 =   df1[df1$value!= 1.00, ]
+
+df1$disorders<- c( "SCZ","BIP","ADHD","MDD","ANX", "PTSD","ALCH","OCD","AN","TS",
+                   "SCZ","BIP","ADHD","MDD","ANX", "PTSD","ALCH","OCD","AN","TS")
+df1$disorders = as.factor(df1$disorders)
+df1$value_lab = as.numeric(paste(df1$value_lab))
+
+asd <-
+  df1 %>%
+  mutate(disorders = fct_reorder(disorders, value_lab)) %>%
+  ggplot(aes(x=disorders,y=value_lab, color = model, group = model)) +
+  geom_point(size = 2.5, alpha = 1) +
+  geom_line(linewidth = 1, alpha = 1) +
+  theme(legend.direction = "vertical",
+        legend.position="none",
+        plot.title = element_text(size = 19,hjust = 0.5),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 12),
+        panel.border = element_rect(linetype = 'solid', colour = 'gray',fill = NA),
+        panel.background = element_rect(fill = "white",colour = "white",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.25, linetype = 'solid',
+                                        colour = "gray"), 
+        panel.grid.minor = element_line(size = 0.25, linetype = 'solid'),
+        axis.line.x = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.line.y = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.text.y = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.text.x = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.ticks.y = element_blank(),
+        axis.title= element_text(size = 12))+
+  geom_hline(yintercept=0, color = 'black')+
+  ylab("genetic correlations")+
+  xlab(" ")+
+  ggtitle("ASD")+
+  ylim(-1, 1)
+asd= asd +scale_color_manual(values =c("#089c85", "#040457"),
+                             #name = "PGS",
+                             labels = c( 'non-p',"uncorrected \n for p"))
+asd
+
+#########################################################################################################
+####### 8. ALCH ########
+
+df1 =   df[df$Var1=="ALCH"|df$Var2=="ALCH", ]
+df1 =   df1[df1$value!= 1.00, ]
+
+df1$disorders<- c( "SCZ","BIP","ADHD","MDD","ANX", "PTSD","ASD","OCD","AN","TS",
+                   "SCZ","BIP","ADHD","MDD","ANX", "PTSD","ASD","OCD","AN","TS")
+df1$disorders = as.factor(df1$disorders)
+df1$value_lab = as.numeric(paste(df1$value_lab))
+
+alch <-
+  df1 %>%
+  mutate(disorders = fct_reorder(disorders, value_lab)) %>%
+  ggplot(aes(x=disorders,y=value_lab, color = model, group = model)) +
+  geom_point(size = 2.5, alpha = 1) +
+  geom_line(linewidth = 1, alpha = 1) +
+  theme(legend.direction = "vertical",
+        legend.position="none",
+        plot.title = element_text(size = 19,hjust = 0.5),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 12),
+        panel.border = element_rect(linetype = 'solid', colour = 'gray',fill = NA),
+        panel.background = element_rect(fill = "white",colour = "white",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.25, linetype = 'solid',
+                                        colour = "gray"), 
+        panel.grid.minor = element_line(size = 0.25, linetype = 'solid'),
+        axis.line.x = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.line.y = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.text.y = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.text.x = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.ticks.y = element_blank(),
+        axis.title= element_text(size = 12))+
+  geom_hline(yintercept=0, color = 'black')+
+  ylab("genetic correlations")+
+  xlab(" ")+
+  ggtitle("ALCH")+
+  ylim(-1, 1)
+alch= alch +scale_color_manual(values =c("#089c85", "#040457"),
+                             #name = "PGS",
+                             labels = c( 'non-p',"uncorrected \n for p"))
+alch
+
+#########################################################################################################
+####### 9. TS ########
+
+df1 =   df[df$Var1=="TS"|df$Var2=="TS", ]
+df1 =   df1[df1$value!= 1.00, ]
+
+df1$disorders<- c( "SCZ","BIP","ADHD","MDD","ANX", "PTSD","ALCH","ASD","OCD","AN",
+                   "SCZ","BIP","ADHD","MDD","ANX", "PTSD","ALCH","ASD","OCD","AN")
+df1$disorders = as.factor(df1$disorders)
+df1$value_lab = as.numeric(paste(df1$value_lab))
+
+ts <-
+  df1 %>%
+  mutate(disorders = fct_reorder(disorders, value_lab)) %>%
+  ggplot(aes(x=disorders,y=value_lab, color = model, group = model)) +
+  geom_point(size = 2.5, alpha = 1) +
+  geom_line(linewidth = 1, alpha = 1) +
+  theme(legend.direction = "vertical",
+        legend.position="none",
+        plot.title = element_text(size = 19,hjust = 0.5),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 12),
+        panel.border = element_rect(linetype = 'solid', colour = 'gray',fill = NA),
+        panel.background = element_rect(fill = "white",colour = "white",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.25, linetype = 'solid',
+                                        colour = "gray"), 
+        panel.grid.minor = element_line(size = 0.25, linetype = 'solid'),
+        axis.line.x = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.line.y = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.text.y = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.text.x = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.ticks.y = element_blank(),
+        axis.title= element_text(size = 12))+
+  geom_hline(yintercept=0, color = 'black')+
+  ylab("genetic correlations")+
+  xlab(" ")+
+  ggtitle("TS")+
+  ylim(-1, 1)
+ts= ts +scale_color_manual(values =c("#089c85", "#040457"),
+                               #name = "PGS",
+                               labels = c( 'non-p',"uncorrected \n for p"))
+ts
+
+
+#########################################################################################################
+####### 10. AN ########
+
+df1 =   df[df$Var1=="AN"|df$Var2=="AN", ]
+df1 =   df1[df1$value!= 1.00, ]
+
+df1$disorders<- c( "SCZ","BIP","ADHD","MDD","ANX", "PTSD","ALCH","ASD","OCD","TS",
+                   "SCZ","BIP","ADHD","MDD","ANX", "PTSD","ALCH","ASD","OCD","TS")
+df1$disorders = as.factor(df1$disorders)
+df1$value_lab = as.numeric(paste(df1$value_lab))
+
+an <-
+  df1 %>%
+  mutate(disorders = fct_reorder(disorders, value_lab)) %>%
+  ggplot(aes(x=disorders,y=value_lab, color = model, group = model)) +
+  geom_point(size = 2.5, alpha = 1) +
+  geom_line(linewidth = 1, alpha = 1) +
+  theme(legend.direction = "vertical",
+        legend.position="none",
+        plot.title = element_text(size = 19,hjust = 0.5),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 12),
+        panel.border = element_rect(linetype = 'solid', colour = 'gray',fill = NA),
+        panel.background = element_rect(fill = "white",colour = "white",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.25, linetype = 'solid',
+                                        colour = "gray"), 
+        panel.grid.minor = element_line(size = 0.25, linetype = 'solid'),
+        axis.line.x = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.line.y = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.text.y = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.text.x = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.ticks.y = element_blank(),
+        axis.title= element_text(size = 12))+
+  geom_hline(yintercept=0, color = 'black')+
+  ylab("genetic correlations")+
+  xlab(" ")+
+  ggtitle("AN")+
+  ylim(-1, 1)
+an= an +scale_color_manual(values =c("#089c85", "#040457"),
+                           #name = "PGS",
+                           labels = c( 'non-p',"uncorrected \n for p"))
+an
+
+#########################################################################################################
+####### 11. OCD ########
+
+df1 =   df[df$Var1=="OCD"|df$Var2=="OCD", ]
+df1 =   df1[df1$value!= 1.00, ]
+
+df1$disorders<- c( "SCZ","BIP","ADHD","MDD","ANX", "PTSD","ALCH","ASD","AN","TS",
+                   "SCZ","BIP","ADHD","MDD","ANX", "PTSD","ALCH","ASD","AN","TS")
+df1$disorders = as.factor(df1$disorders)
+df1$value_lab = as.numeric(paste(df1$value_lab))
+
+ocd <-
+  df1 %>%
+  mutate(disorders = fct_reorder(disorders, value_lab)) %>%
+  ggplot(aes(x=disorders,y=value_lab, color = model, group = model)) +
+  geom_point(size = 2.5, alpha = 1) +
+  geom_line(linewidth = 1, alpha = 1) +
+  theme(legend.direction = "vertical",
+        legend.position="right",
+        plot.title = element_text(size = 19,hjust = 0.5),
+        legend.text = element_text(size = 19),
+        legend.title = element_text(size = 16),
+        panel.border = element_rect(linetype = 'solid', colour = 'gray',fill = NA),
+        panel.background = element_rect(fill = "white",colour = "white",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.25, linetype = 'solid',
+                                        colour = "gray"), 
+        panel.grid.minor = element_line(size = 0.25, linetype = 'solid'),
+        axis.line.x = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.line.y = element_line(colour = 'gray', size=0.5, linetype='solid'),
+        axis.text.y = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.text.x = element_text(size = 12, colour="black", family = "sans", angle = 0), 
+        axis.ticks.y = element_blank(),
+        axis.title= element_text(size = 12))+
+  geom_hline(yintercept=0, color = 'black')+
+  ylab("genetic correlations")+
+  xlab(" ")+
+  ggtitle("OCD")+
+  ylim(-1, 1)
+ocd= ocd +scale_color_manual(values =c("#089c85", "#040457"),
+                           name = " ",
+                           labels = c( 'non-p',"uncorrected for p"))
+ocd
+
+
+library(gridExtra)
+library(ggpubr)
+
+leg <- get_legend(ocd)
+ocd <- ocd + theme(legend.position = "none")
+
+
+Figure2 =ggarrange(anx, mdd, ptsd, bip, scz,adhd, asd, alch, ocd,an, ts,  leg,
+                ncol=3, nrow=4)
+plot(Figure2)
+
+ggsave(Figure2, 
+       file="./Figure2.tiff", 
+       width=16, height=16) 
+
+ggsave(Figure2, 
+       file="./Figure2.jpeg", 
+       width=16, height=16) 
+
+```

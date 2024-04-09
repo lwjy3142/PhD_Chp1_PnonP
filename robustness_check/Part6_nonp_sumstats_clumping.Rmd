@@ -1,0 +1,293 @@
+---
+title: "Part6_nonp_sumstats_clumping"
+author: "Wangjingyi Liao"
+date: "2024-02-23"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+
+LD Clumping for p and non-p
+
+# LD clumping: we used the 1000g reference panel (EUR) in plink1.9 to do the LD clumping 
+
+```{bash}
+
+#schizophrenia non-p
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/SCZ_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_SCZnonp_gwase
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_SCZnonp_gwase.clumped > CLUMP_SCZnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_SCZnonp_gwase_new.txt > CLUMP_SCZnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_SCZnonp_gwase_sig_independent_signals_New.txt
+
+# 118 hits
+
+#Bipolar Non-p
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/BIP_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_BIPnonp_gwase
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_BIPnonp_gwase.clumped > CLUMP_BIPnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_BIPnonp_gwase_new.txt > CLUMP_BIPnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_BIPnonp_gwase_sig_independent_signals_New.txt
+
+# 22 hits
+
+#ADHD
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/ADHD_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_ADHDnonp_gwase
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_ADHDnonp_gwase.clumped > CLUMP_ADHDnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_ADHDnonp_gwase_new.txt > CLUMP_ADHDnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_ADHDnonp_gwase_sig_independent_signals_New.txt
+
+#12
+
+#MDD
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/MDD_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_MDDnonp_gwase
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_MDDnonp_gwase.clumped > CLUMP_MDDnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_MDDnonp_gwase_new.txt > CLUMP_MDDnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_MDDnonp_gwase_sig_independent_signals_New.txt
+
+#14 HIT
+
+#ANX
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/ANX_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_ANXnonp_gwase
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_ANXnonp_gwase.clumped > CLUMP_ANXnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_ANXnonp_gwase_new.txt > CLUMP_ANXnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_ANXnonp_gwase_sig_independent_signals_New.txt
+
+#0 hits
+
+
+#PTSD
+
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/PTSD_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_PTSDnonp_gwase
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_PTSDnonp_gwase.clumped > CLUMP_PTSDnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_PTSDnonp_gwase_new.txt > CLUMP_PTSDnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_PTSDnonp_gwase_sig_independent_signals_New.txt
+
+# 0 hits
+
+#ALCH
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/ALCH_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_ALCHnonp_gwase
+
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_ALCHnonp_gwase.clumped > CLUMP_ALCHnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_ALCHnonp_gwase_new.txt > CLUMP_ALCHnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_ALCHnonp_gwase_sig_independent_signals_New.txt
+
+#3 HITS
+
+
+#ASD
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/ASD_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_ASDnonp_gwase
+
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_ASDnonp_gwase.clumped > CLUMP_ASDnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_ASDnonp_gwase_new.txt > CLUMP_ASDnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_ASDnonp_gwase_sig_independent_signals_New.txt
+
+#2 independent hit
+
+
+#OCD
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/OCD_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_OCDnonp_gwase
+
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_OCDnonp_gwase.clumped > CLUMP_OCDnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_OCDnonp_gwase_new.txt > CLUMP_OCDnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_OCDnonp_gwase_sig_independent_signals_New.txt
+
+#NO INDEPENDENT HITS
+
+#AN
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/AN_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_ANnonp_gwase
+
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_ANnonp_gwase.clumped > CLUMP_ANnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_ANnonp_gwase_new.txt > CLUMP_ANnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_ANnonp_gwase_sig_independent_signals_New.txt
+
+#10 hit
+
+#TS
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/TS_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_TSnonp_gwase
+
+
+# get only the rsid TSd pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_TSnonp_gwase.clumped > CLUMP_TSnonp_gwase_new.txt
+
+# create a file with only the significTSt independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_TSnonp_gwase_new.txt > CLUMP_TSnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_TSnonp_gwase_sig_independent_signals_New.txt
+
+#0 HITS
+
+
+```
