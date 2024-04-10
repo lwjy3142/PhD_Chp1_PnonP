@@ -211,10 +211,10 @@ after the row_chunk.csv is created, the arrary_geneSEM.sh script will automatica
 Then the LDSC outputs and Sumstats will be used in the GWAS
 
 here is one example of the .sh script taking p as example. 
-```{bash, file = '/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/array_genomicSEM_P.sh'}
+```{bash, file = './array_genomicSEM_P.sh'}
 ```
 
-```{r, file='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/P_genomicSEM_meta.R'}
+```{r, file='./P_genomicSEM_meta.R'}
 ```
 
 
