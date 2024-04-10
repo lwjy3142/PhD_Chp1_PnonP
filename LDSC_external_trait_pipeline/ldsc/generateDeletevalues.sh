@@ -6,7 +6,7 @@ input4=$4
 output1=$5
 output2=$6
 globaloutput=$7
-ldscoredir="/mnt/d/PhD Queen Mary/PhD Project 1 - p_non-p/Analysis Pipeline/5 - LDSC/ldsc/"
+ldscoredir="./ldsc/" #where the ldsc directory is
 #pythonpath="/mnt/lustre/groups/ukbiobank/Edinburgh_Data/Software/anaconda2/bin/python"
 
 ldsc/ldsc.py --n-blocks 200 --print-delete-vals --rg "${input1}","${input2}" --ref-ld-chr "$ldscoredir"/eur_w_ld_chr/ --w-ld-chr "$ldscoredir"/eur_w_ld_chr/ --out ${output1}
