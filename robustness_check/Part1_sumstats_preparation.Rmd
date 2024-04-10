@@ -11,10 +11,11 @@ output: html_document
 library(formatR)
 knitr::opts_chunk$set(eval = FALSE)
 
-
+setwd('')
 ```
 
 ```{R}
+
 #SCZ
 
 scz <- fread('raw_data/SCZ/PGC3_SCZ_wave3.european.autosome.public.v3.vcf.tsv.gz')
@@ -26,7 +27,7 @@ scz$Neff<- scz$NEFF*2
 
 scz$NEFF <- NULL
 
-fwrite(scz, 'genomicSEM/scz_withneff.txt', sep = '\t', col.names = T)
+fwrite(scz, './scz_withneff.txt', sep = '\t', col.names = T)
 
 #the following text was found in the paper: 'In each individual cohort, association testing was based on an additive logistic regression model using PLINK'.
 

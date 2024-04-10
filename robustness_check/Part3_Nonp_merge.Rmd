@@ -13,30 +13,30 @@ knitr::opts_chunk$set(eval = FALSE)
 
 
 ```{r}
-
-setwd('/scratch/prj/teds/Sumstate_PRS_Codelab/robustness_check/')
+set directory to there the genomicSEM outputs were kept 
+setwd('robustness_check/')
 
 getwd()
 
 library(dplyr)
 library(qqman)
 
-# get list of all .rds files in directory
+# get list of all .rds files in the directory
 #files <- list.files(pattern = "\\.rds$")
 
+#list files of SCZ nonp
 files <- list.files(pattern = "^SCZnonp")
 
+#check one output to get the colnames for the merged dataset
 load(files[1])
-
 test <- result[[1]]
-
 colnames <- colnames(test)
-
-remove(test)
+remove(test) #remove the test file before merging
 
 # initialize an empty data frame
 combined_data <- data.frame(matrix(ncol = 27, nrow = 0))
 
+#give colnames to the empty data frame perparing for merging
 colnames(combined_data) <- colnames
 
 # loop through each file, read in data, and bind to existing data frame
@@ -46,8 +46,10 @@ for (file in files) {
   combined_data <- rbind(combined_data, test)
 }
 
+#save as RDS
 saveRDS(combined_data, file = 'SCZ_nonp_gwas_results.rds')
 
+#basic manhattan visualization, better manhattan plot script is in script Part 7
 manhattan(combined_data, p = 'Pval_Estimate')
 
 
@@ -399,11 +401,12 @@ manhattan(combined_data, p = 'Pval_Estimate')
 
 in bash, copy all rds files to the nonp_residual_sumstats folder
 ```{bash}
-
+#mkdir nonp_residual_sumstats
 cp *_nonp_gwas_results.rds ./nonp_residuals_sumstats
 
 ```
-#rds file convert to txt file and check the SNP number. 
+
+all rds file convert to txt file and check the SNP number to check if missing batches. change the column names and calcualte the expected sample size of Nonps using Mallard 2019 method
 
 ```{r}
 setwd('./nonp_residuals_sumstats/')
