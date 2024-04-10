@@ -20,7 +20,7 @@ library(tidyverse)
 
 # for SCZ
 ```{r}
-setwd('/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check')
+setwd('./disease_specificity/robustness_check')
 gwasResults <- fread('./nonp_residuals_sumstats/SCZ_nonp_gwas_results.txt')
 independenthit <- fread('./nonp_ld_clumping/CLUMP_SCZnonp_gwase_sig_independent_signals_New.txt')
 snpsOfInterest <- as.list(independenthit[,1])

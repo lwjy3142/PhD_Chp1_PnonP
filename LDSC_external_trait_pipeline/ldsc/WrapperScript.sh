@@ -6,7 +6,7 @@
 p_sumstats_path="../p_sumstats" #path to the sumstats munged file before controlling for p
 nonp_sumstats_path="../non-p_sumstats" #path to the sumstats munged file before controlling for non-p
 external_sumstats_path="../munged_external_cont" #path to the external trait sumstats munged file
-outpath="../ldsc" #path to the output directory
+outpath="../ldsc_output" #path to the output directory
 
 ##generate delete values
 

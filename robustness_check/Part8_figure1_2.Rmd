@@ -18,7 +18,7 @@ display.brewer.pal(n = 11, name = 'RdYlBu')
 display.brewer.pal(n = 11, name = 'RdBu')
 df<- read.csv('snp_heritability.csv', header = T, strip.white = T, na.strings = "NA")
 
-#df<- read.csv('/Users/margheritamalanchini/Dropbox/2019 Queen Mary/MM papers 2019/p-non-p/manuscript/Figures/Figure 1_MM/snp_heritability_p.csv', header = T, strip.white = T, na.strings = "NA")
+#df<- read.csv('./snp_heritability_p.csv', header = T, strip.white = T, na.strings = "NA")
 names(df)
 
 df$traits = as.factor(df$traits)

@@ -13,17 +13,21 @@ knitr::opts_chunk$set(eval = FALSE)
 
 1. LDSC and jack knife corrected genetic correlation comparision - script adapted from Joni Coleman.
 
-check the /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/ldsc_nonp_externaltrait_residuals folder
+check the ./LDSC_external_trait_pipeline folder
 
 useage:
   1. munge summary statistics for external traits and save them to the munged_external_binary and munged_External_count folder, binary and continuous traits will be analysed separately. 
   2. munged original summary statistics uncorrected for p and non-p summary statistics saved to the p_sumstats and non-p_sumstats folder
-  3. cd to the ldsc directory
-  4. open the WrapperScript.sh file and edit the working directories and folder names 
-  5. submit the sh file using: sh WrapperScript.sh
-  6. individual outputs will be saved in to the jf_results folder and LDSC log files will be saved into Logs folder
+  3. make sure the ldsc is actual kept in the ldsc folder: e.g. list ./ldsc/ldsc 
+  4. cd to the ldsc directory
+  5. open the WrapperScript.sh file and edit the working directories and folder directories 
+  6. within a ldsc environment (e.g. conda activate ldsc), submit the sh file using: sh WrapperScript.sh
+  7. individual outputs will be saved in to the jf_results folder and LDSC log files will be saved into Logs folder
 
-2. Figure 3-4 - genetic correlation with external trait
+
+
+
+2. Making Figure 3-4 - visualization of the genetic correlation with external trait
 
 
 ```{r}
@@ -40,7 +44,7 @@ library(data.table)
 library(dplyr)
 
 # Read data from the CSV file into the data frame 'external_rgs'
-setwd('/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/ldsc_nonp_externaltrait_residuals/ldsc/')
+setwd('./robustness_check/ldsc_nonp_externaltrait_residuals/ldsc/')
 # Read the file using fread and skip lines with empty cells
 external_rgs <- fread('./p_nonp_allexternal_traits_ldsc.txt', fill = T)
 
@@ -203,7 +207,7 @@ rghealth1 = rghealth+facet_wrap(vars(disorder), ncol = 6)+
 
 plot(rghealth1)
 
-ggsave(rghealth1, file="/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/ldsc_nonp_externaltrait_residuals/figures_ldsc/p_nonp_rgs_health.tiff", width=13, height=11)
+ggsave(rghealth1, file="./robustness_check/ldsc_nonp_externaltrait_residuals/figures_ldsc/p_nonp_rgs_health.tiff", width=13, height=11)
 
 ```
 
@@ -246,7 +250,7 @@ rgpsych1 = rgpsych+facet_wrap(vars(disorder), ncol = 6)+
 
 plot(rgpsych1)
 
-ggsave(rgpsych1, file="/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/ldsc_nonp_externaltrait_residuals/figures_ldsc/p_nonp_rgs_psychological.tiff", width=13, height=11)
+ggsave(rgpsych1, file="./robustness_check/ldsc_nonp_externaltrait_residuals/figures_ldsc/p_nonp_rgs_psychological.tiff", width=13, height=11)
 
 ```
 
@@ -288,7 +292,7 @@ fig_demographic1 = fig_demographic+facet_wrap(vars(disorder), ncol = 6)+
 
 plot(fig_demographic1)
 
-ggsave(fig_demographic1, file="/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/ldsc_nonp_externaltrait_residuals/figures_ldsc/p_nonp_rgs_demographic.tiff", width=13, height=9)
+ggsave(fig_demographic1, file="./robustness_check/ldsc_nonp_externaltrait_residuals/figures_ldsc/p_nonp_rgs_demographic.tiff", width=13, height=9)
 
 ```
 
@@ -331,7 +335,7 @@ rganthro1 = rganthro+facet_wrap(vars(disorder), ncol = 6)+
 plot(rganthro1)
 
 
-ggsave(rganthro1, file="/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/ldsc_nonp_externaltrait_residuals/figures_ldsc/p_nonp_rgs_anthropometric.tiff", width=11, height=7)
+ggsave(rganthro1, file="./robustness_check/ldsc_nonp_externaltrait_residuals/figures_ldsc/p_nonp_rgs_anthropometric.tiff", width=11, height=7)
 
 ```
 
