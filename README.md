@@ -1,4 +1,4 @@
-this is the script used for the preprint title: Isolating transdiagnostic effects reveals specific genetic profiles in psychiatric disorders. by Keser, Liao et al., 2024. 
+this is the script used for the preprint title: Isolating transdiagnostic effects reveals specific genetic profiles in psychiatric disorders. by Engin Keser, Wangjingyi Liao, Andrea G Allegrini, Kaili Rimfeld, Thalia C. Eley, Robert Plomin, Margherita Malanchini 2024
 
 It contains two parts:
 1. the robustness check folder contained all scripts used in the analysis except for the LDSC analysis with external traits, which is stored in the another folder.
