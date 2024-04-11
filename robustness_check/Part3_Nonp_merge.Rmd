@@ -5,7 +5,9 @@ author: "Wangjingyi Liao & Engin Keser"
 date: "2023-11-22"
 output: html_document
 ---
+Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
 
+Title of the script: "Part3_Nonp_merge"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(eval = FALSE)
@@ -13,7 +15,7 @@ knitr::opts_chunk$set(eval = FALSE)
 
 
 ```{r}
-set directory to there the genomicSEM outputs were kept 
+#set directory to there the genomicSEM outputs were kept 
 setwd('robustness_check/')
 
 getwd()

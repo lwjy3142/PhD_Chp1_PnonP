@@ -5,12 +5,20 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
+# Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
+
+## Title of the script: "Part8 Figure 1 Figure 2"
+
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+
+library(formatR)
+knitr::opts_chunk$set(eval = FALSE)
+
+
 ```
 
 ### SNP heritabilities of psychiatric disorders before accounting for p ###
-```{r, echo = FALSE}
+```{r}
 library(tidyverse)
 library(RColorBrewer)
 

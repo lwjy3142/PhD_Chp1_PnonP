@@ -6,6 +6,10 @@ date: "2023-11-22"
 output: html_document
 ---
 
+Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
+
+Title of the script: "Part4_LDSCnonp"
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(eval = FALSE)
 ```

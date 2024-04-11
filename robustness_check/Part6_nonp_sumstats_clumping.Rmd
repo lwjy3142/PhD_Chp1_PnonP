@@ -1,11 +1,14 @@
 ---
-title: "Part6_nonp_sumstats_clumping"
-author: "Wangjingyi Liao"
+Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
+Title of the script: "Part 6 - nonp sumstats clumping"
+author: "Wangjingyi Liao & Engin Keser"
 date: "2024-02-23"
 output: html_document
 ---
 
+Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
 
+Title of the script: "Part 6 - nonp sumstats clumping"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(eval = FALSE)
 ```
@@ -13,7 +16,7 @@ knitr::opts_chunk$set(eval = FALSE)
 
 LD Clumping for p and non-p
 
-# LD clumping: we used the 1000g reference panel (EUR) in plink1.9 to do the LD clumping 
+LD clumping: we used the 1000g reference panel (EUR) in plink1.9 to do the LD clumping 
 
 ```{bash}
 

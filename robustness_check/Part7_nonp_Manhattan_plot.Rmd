@@ -1,4 +1,6 @@
+# Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
 
+## Title of the script: "Part 7 - nonp Manhattan plot"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(eval = FALSE)
 ```

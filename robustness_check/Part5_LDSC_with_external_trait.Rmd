@@ -1,11 +1,16 @@
 ---
-title: "Part 5 - LDSC with external trait"
-author: "Wangjingyi Liao"
+Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
+Title of the script: "Part 5 - LDSC with external trait"
+author: "Wangjingyi Liao & Engin Keser"
 date: "2024-02-14"
 output:
   html_document: default
   pdf_document: default
 ---
+
+Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
+
+Title of the script: "Part 5 - LDSC with external trait"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(eval = FALSE)
@@ -17,12 +22,19 @@ check the ./LDSC_external_trait_pipeline folder
 
 useage:
   1. munge summary statistics for external traits and save them to the munged_external_binary and munged_External_count folder, binary and continuous traits will be analysed separately. 
+  
   2. munged original summary statistics uncorrected for p and non-p summary statistics saved to the p_sumstats and non-p_sumstats folder
+  
   3. make sure the ldsc is actual kept in the ldsc folder: e.g. list ./ldsc/ldsc 
+  
   4. cd to the ldsc directory
+  
   5. open the WrapperScript.sh file and edit the working directories and folder directories 
+  
   6. within a ldsc environment (e.g. conda activate ldsc), submit the sh file using: sh WrapperScript.sh
+  
   7. individual outputs will be saved in to the jf_results folder and LDSC log files will be saved into Logs folder
+
 
 
 
