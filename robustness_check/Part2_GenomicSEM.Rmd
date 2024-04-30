@@ -188,10 +188,11 @@ linprob=c(F, F, F, F, F, F, F, F, F, F, F)
 sumstats <-sumstats(files=files,ref=ref,trait.names=trait.names,
                       se.logit=se.logit,OLS=OLS,linprob=linprob,
                       info.filter=info.filter,
-                      maf.filter=maf.filter,keep.indel=FALSE,parallel=TRUE,cores=100, N=N)
+                      maf.filter=maf.filter,keep.indel=FALSE,parallel=TRUE,cores=11, N=N)
 
 #save the cleaned SNP data to a r.data file for GWAS analysis
 save(sumstats, file="/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/P_sumstats_11traits.RData")
+save(sumstats, file="/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/P_sumstats_11traits.RData")
 ```
 
 create_chunk_universal.R script is used to subset the SNPs to be included in one chunk. 

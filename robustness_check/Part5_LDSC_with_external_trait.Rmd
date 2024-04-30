@@ -1,6 +1,6 @@
 ---
 title: "Part 5 - LDSC with external trait"
-author: "Wangjingyi Liao"
+author: "Wangjingyi Liao & Engin Keser"
 date: "2024-02-14"
 output:
   html_document: default

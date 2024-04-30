@@ -1,0 +1,1431 @@
+---
+Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
+Title of the script: "disease_specificity_script"
+author: "Wangjingyi Liao & Engin Keser"
+date: "2023-06-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+library(formatR)
+knitr::opts_chunk$set(eval = FALSE)
+
+knitr::opts_knit$set(root.dir = '/scratch/prj/teds/Sumstate_PRS_Codelab/robustness_check/')
+
+```
+
+```{R}
+#SCZ
+
+scz <- fread('raw_data/SCZ/PGC3_SCZ_wave3.european.autosome.public.v3.vcf.tsv.gz')
+
+
+scz$Neff<- scz$NEFF*2
+#this is also the number reported by grozinger et al 2022
+#in the supplementary material it says Neff is NEFF devided by 2. But the readme file says the NEFF is total effective sample size. however when we calculate the neff by cohort, the neff*2 get closer to the real NEFF. 
+
+scz$NEFF <- NULL
+
+fwrite(scz, 'genomicSEM/scz_withneff.txt', sep = '\t', col.names = T)
+
+#the following text was found in the paper: 'In each individual cohort, association testing was based on an additive logistic regression model using PLINK'.
+
+scz$p_imputed <- 2*pnorm((abs(scz$BETA)/scz$SE), lower.tail = F)
+cor(scz$PVAL, scz$p_imputed)
+
+#the imputed p value according to GenomicSEM wiki's formular matched 99% with the p value they provided. that suggests the SE they provided is the SE of BETA, not OR. Therefore the parameters should be: 
+#se.logit: T
+#ols: F
+#linprob: F
+```
+
+```{R}
+#BIP
+
+bip <- fread('raw_data/BIP/pgc-bip2021-all.vcf.tsv.gz')
+
+bip$Neff <- bip$NEFFDIV2*2
+
+bip$NEFFDIV2 <- NULL
+
+fwrite(bip, 'genomicSEM/bip_withneff.txt', sep = '\t', col.names = T)
+
+
+#the following text was found in the readme and method: For PGC cohorts, GWAS were conducted within each cohort using an additive logistic regression model in PLINK v1.90.
+
+bip$p_imputed <- 2*pnorm((abs(bip$BETA)/bip$SE), lower.tail = F)
+cor(bip$PVAL, bip$p_imputed)
+
+#the imputed p value according to GenomicSEM wiki's formular matched 99% with the p value they provided. that suggests the SE they provided is the SE of BETA, not OR. Therefore the parameters should be: 
+#se.logit: T
+#ols: F
+#linprob: F
+
+```
+
+
+```{R}
+#ADHD
+
+adhd <- fread('raw_data/ADHD/ADHD_meta_Jan2022_iPSYCH1_iPSYCH2_deCODE_PGC.meta.gz', data.table = T)
+
+##read in information about sample size per cohort
+adhdcohort<-read.csv("raw_data/ADHD/ADHDcohorts.csv",header=TRUE)
+
+#calculate sample prevalence for each cohort
+adhdcohort$v<-adhdcohort$cases/(adhdcohort$cases+adhdcohort$controls)
+
+#calculate cohort specific effective sample size
+adhdcohort$EffN<-4*adhdcohort$v*(1-adhdcohort$v)*(adhdcohort$cases+adhdcohort$controls)
+
+#calculate sum of effective sample size:103135.5
+adhdcohort_effN <- sum(adhdcohort$EffN)
+
+adhd$Neff <- adhdcohort_effN
+
+fwrite(adhd, file = 'genomicSEM/adhd_withneff.txt', sep = '\t')
+
+# in the readme file it says the SE: Standard error of the log(OR)
+# in the paper it says all analysis was conduced suing logistic regression
+# se.logit: T
+# ols: F
+# linprob: F
+
+```
+
+
+```{R}
+#asd
+
+asd <- fread('raw_data/ASD/iPSYCH-PGC_ASD_Nov2017', data.table = F)
+
+#18,382 cases, 27,969 controls
+#OR Odds ratio for the effect of the A1 allele
+#SE Standard error of the log(OR)
+
+#we take the number from Gronziger downward bias paper, but we don't know how they calculated it. 43778
+
+asd$Neff <- 43778
+
+#output the summary stats with the SNP-specific effective sample size column
+fwrite(asd, file = "genomicSEM/asd_withneff.txt", sep = "\t")
+
+
+#in the paper they meta-analysed ipsych and PGC, both using logistric regression.
+# they reported OR and se of log(OR)
+# in the google form somone asked question about the ASD in genomicSEM. TFF was used. 
+# se.logit: T
+# ols: F
+# linprob: F
+
+```
+
+```{R}
+#mdd
+
+mdd <- fread('raw_data/MDD/PGC_UKB_depression_genome-wide.txt.gz')
+
+#convert allele frequency column to minor allele frequency for effective sample size calculation below
+mdd$MAF<-ifelse(mdd$Freq > .5, 1-mdd$Freq, mdd$Freq)
+
+#remove Freq column now that we have created MAF column
+mdd$Freq<-NULL
+
+#calculate SNP-specific sum of effective sample size
+mdd$Neff<-4/((2*mdd$MAF*(1-mdd$MAF))*mdd$StdErrLogOR^2)
+
+#calculate total effective N to cap backed out Neff
+#these are the case control numbers from table 1 of Howard et al. (2019)
+#note that these numbers exclude 23andMe
+Ncases<-127552+43204
+Ncontrols<-233763+95680
+v<-Ncases/(Ncases+Ncontrols)
+TotalNeff<-4*v*(1-v)*(Ncases+Ncontrols)
+
+#cap at 1.1 of total effective N
+mdd$Neff<-ifelse(mdd$Neff > 1.1*TotalNeff, 1.1*TotalNeff, mdd$Neff)
+
+#lower limit of 0.5 of total effective N
+mdd$Neff<-ifelse(mdd$Neff < 0.5*TotalNeff, 0.5*TotalNeff, mdd$Neff)
+
+#output the updated MDD file
+fwrite(mdd, file = "genomicSEM/mdd_withneff.txt", sep = "\t")
+
+
+#in the paper they meta-analysed pgc and ukbb, both using log(OR) and SE of log(OR) to meta-analysis
+# they reported OR and se of log(OR) in the summary statistics
+# in the google form somone asked question about the MDD in genomicSEM. TFF was used. 
+# se.logit: T
+# ols: F
+# linprob: F
+
+```
+
+
+```{R}
+#ocd
+
+ocd <- fread('raw_data/OCD/ocd_aug2017.gz')
+ocdcohort<-read.csv("raw_data/OCD/OCDcohorts.csv",header=TRUE)
+
+#calculate sample prevalence for each cohort
+ocdcohort$v<-ocdcohort$cases/(ocdcohort$cases+ocdcohort$controls)
+
+#calculate cohort specific effective sample size
+ocdcohort$EffN<-4*ocdcohort$v*(1-ocdcohort$v)*(ocdcohort$cases+ocdcohort$controls)
+
+#calculate sum of effective sample size:103135.5
+ocdcohort_effN <- sum(ocdcohort$EffN)
+
+ocd$Neff <- ocdcohort_effN
+
+fwrite(ocd, file = 'genomicSEM/ocd_withneff.txt', sep = '\t')
+
+# in the readme: OR:Odds ratio for the effect of the A1 allele, SE: Standard error of the log(OR)
+# confirmed in the google form
+# se.logit: T
+# ols: F
+# linprob: F
+```
+
+
+```{R}
+#TS 
+
+ts <- fread('raw_data/TS/TS_Oct2018.gz')
+tscohort<-read.csv("raw_data/TS/Tourettecohorts.csv",header=TRUE)
+
+#calculate sample prevalence for each cohort
+tscohort$v<-tscohort$cases/(tscohort$cases+tscohort$controls)
+
+#calculate cohort specific effective sample size
+tscohort$EffN<-4*tscohort$v*(1-tscohort$v)*(tscohort$cases+tscohort$controls)
+
+#calculate sum of effective sample size:103135.5
+tscohort_effN <- sum(tscohort$EffN)
+
+ts$Neff <- tscohort_effN
+
+fwrite(ts, file = 'genomicSEM/ts_withneff.txt', sep = '\t')
+
+# in the readme: OR:Odds ratio for the effect of the A1 allele, SE: Standard error of the log(OR)
+# confirmed in the google form
+# se.logit: T
+# ols: F
+# linprob: F
+```
+
+```{R}
+#AN
+
+an <- fread('raw_data/AN/pgcAN2.2019-07.vcf.tsv')
+
+an<- an %>% rename(A2 = REF, A1 = ALT)
+
+an$Neff <- an$NEFFDIV2*2
+
+an$NEFFDIV2 <- NULL
+
+fwrite(an, 'genomicSEM/an_withneff.txt', sep = '\t')
+
+
+ancohort <- data.frame(cohort = c('chop','fin1','fre1','gns2','itgr','net1','poco','spa1','ukd1','usa1','w1to6','w7','w8','w9','w10','w11','w12','w13','w14','w15','w16','w17','w18','w19','w20','w21','w22','w23','w24','aunz','usa2','sedk','ukbb'), 
+                       cases = c(1032,130,293,657,144,348,239,184,242,418,357,97,162,180,156,164,176,181,169,185,174,158,245,211,200,161,211,164,1241,2536,1304,4105,768), 
+                       controls =c(3568,503,990,2263,129,1337,604,156,957,750,4828,831,1062,1021,714,754,785,789,761,818,800,761,852,851,802,801,845,957,1447,15624,1307,3793,3065))
+
+#calculate sample prevalence for each cohort
+ancohort$v<-ancohort$cases/(ancohort$cases+ancohort$controls)
+
+#calculate cohort specific effective sample size
+ancohort$EffN<-4*ancohort$v*(1-ancohort$v)*(ancohort$cases+ancohort$controls)
+
+#calculate sum of effective sample size:46321.9
+ancohort_effN <- sum(ancohort$EffN)
+
+#AN Neff was reported in grozinger et al 2022 and the number was checked using the number calcualted using cohort information
+# se.logit: T
+# ols: F
+# linprob: F
+
+```
+
+```{R}
+
+#alch
+
+alch <- fread('raw_data/ALCH/MALLARD_ET_AL-2021_AJP-AUDIT_PROBLEMS_FACTOR.txt.gz')
+
+#restrict to MAF of 40% and 10%
+alch2<-subset(alch, alch$MAF <= .4 & alch$MAF >= .1)
+#calculate expected sample size (N_hat)
+N_hat<-mean(1/((2*alch2$MAF*(1-alch2$MAF))*alch2$SE^2))
+
+alch$N <- N_hat
+
+fwrite(alch, 'genomicSEM/alch_withtotaln.txt', sep = '\t')
+
+#in the readme it says:
+#Z      Z statistic (i.e., ratio of est/SE)
+#alch gwas is not case/control, it is a continuous trait. therefore we use the following parameters with total sample size. No prevelance for this
+# se.logit: F
+# ols: T
+# linprob: F
+
+```
+
+```{r}
+
+#ptsd
+
+ptsd <- fread('raw_data/PTSD/pts_eur_freeze2_overall.results.gz')
+
+fwrite(ptsd, file = 'genomicSEM/ptsd_withneffperSNP.txt', sep = '\t')
+
+range(ptsd$Neff)
+#17559.4 70237.5
+#they provide effective sample size per SNP, we are using that column. and the range matches with grozinger et al 2022
+#in the readme: OR Odds ratio, SE Standard error of log OR
+# se.logit: T
+# ols: F
+# linprob: F
+
+```
+#anx
+
+```{R}
+anx <- fread('raw_data/ANX/META_UKBB_iPSYCH_ANGST_wNcol.sumstats.gz')
+
+#read in 1000 genomes reference file used to get approximation of SNP MAF
+#as MAF not present in the anxiety summary statistics file
+ref<-fread("raw_data/reference.1000G.maf.0.005.txt.gz",data.table=FALSE)
+
+#subset reference file to just SNP and MAF
+attach(ref)
+ref<-data.frame(SNP,MAF)
+
+#merge Anxiety and reference file
+anx<-inner_join(anx,ref,by="SNP")
+
+#calculate effective sample size implied by GWAS summary statistics 
+anx$Neff<-4/((2*anx$MAF*(1-anx$MAF))*anx$StdErr^2)
+
+#calculate total effective N to cap backed out Neff
+Ncases<-31977 
+Ncontrols<-82114
+v<-Ncases/(Ncases+Ncontrols)
+TotalNeff<-4*v*(1-v)*(Ncases+Ncontrols)
+
+#cap at 1.1 of total effective N
+anx$Neff<-ifelse(anx$Neff > 1.1*TotalNeff, 1.1*TotalNeff, anx$Neff)
+
+#lower limit of 0.5 of total effective N
+anx$Neff<-ifelse(anx$Neff < 0.5*TotalNeff, 0.5*TotalNeff, anx$Neff)
+
+#remove reference panel MAF from file
+anx$MAF<-NULL
+
+#remove sample size column so munge knows to use Neff column 
+anx$TotalSampleSize<-NULL
+
+#output the summary stats with the SNP-specific effective sample size column
+fwrite(anx, file = "genomicSEM/anx_withneff.txt", sep = "\t")
+
+#it is an example in the github page, and the parameters are
+# se.logit: T
+# ols: F
+# linprob: F
+
+```
+
+
+STEP 2: Data preparation for GenomicSEM: munge and ldsc
+
+```{R}
+#load in GenomicSEM and required packages
+require(GenomicSEM)
+
+#set working direcotry to where all raw summary statistics were kept
+setwd("/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/")
+
+############################################################################################################
+####STEP 1: munge() ###
+############################################################################################################
+#create vector of the names of the summary statistics files
+files <- c("scz_withneff.txt",
+           "bip_withneff.txt",
+           "adhd_withneff.txt",
+           "mdd_withneff.txt", 
+           "anx_withneff.txt",
+           "ptsd_withneffperSNP.txt",
+           "alch_withtotaln.txt", 
+           "asd_withneff.txt", 
+           "ocd_withneff.txt", 
+           "an_withneff.txt",
+           "ts_withneff.txt")
+
+
+
+#define the reference file being used to allign alleles across summary stats, this is the hapmap3 reference panel which has less SNP but better LD estimation apparently. 
+hm3<-"../raw_data/eur_w_ld_chr/w_hm3.snplist"
+
+#name the traits 
+trait.names <- c("SCZ", 
+                 "BIP", 
+                 "ADHD",
+                 "MDD", 
+                 "ANX", 
+                 "PTSD", 
+                 "ALCH", 
+                 "ASD", 
+                 "OCD", 
+                 "AN", 
+                 "TS")
+
+
+#list the sample sizes. Its NA if the SNP level effective sample was included in the file
+N=c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA)
+
+
+#define the imputation quality filter
+info.filter=0.9
+
+#define the MAF filter
+maf.filter=0.01
+
+#run munge, summary statistics will be munged with the reference file and saved as xxx.sumstats.gz in the current work dir. 
+munge(files=files,hm3=hm3,trait.names=trait.names,N=N,info.filter=info.filter,maf.filter=maf.filter)
+
+############################################################################################################
+###step 2: ldsc() ###
+###obtain the genetic covariance (S) matrix & corresponding sampling covariance matrix (V)
+############################################################################################################
+setwd("/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/")
+#vector of munged summary statistics
+traits <- c("SCZ.sumstats.gz", 
+            "BIP.sumstats.gz", 
+            "ADHD.sumstats.gz", 
+            "MDD.sumstats.gz", 
+            "ANX.sumstats.gz",
+            "PTSD.sumstats.gz", 
+            "ALCH.sumstats.gz", 
+            "ASD.sumstats.gz", 
+            "OCD.sumstats.gz", 
+            "AN.sumstats.gz", 
+            "TS.sumstats.gz")
+
+#sample.prev: A vector of sample prevalences of length equal to the number of traits. 
+#Sample prevalence is calculated as the number of cases over the total number of participants (i.e., cases + controls). 
+#Possible range = 0-1. HOWEVER, if you have access to the sum of effective sample sizes then this should be entered for 
+#munge in the prior step and sample prevalence should be entered as 0.5. If the trait is continuous, the values should equal NA.
+#enter sample prevalence of .5 to reflect that all traits were munged using the sum of effective sample size
+sample.prev <- c(.5, .5, .5, .5, .5, .5, NA, .5, .5, .5, .5)
+
+#These estimates can be obtained from a number of sources, such as large scale epidemiological studies. Possible range = 0-1. 
+#Again, if the trait is continuous the values should equal NA.
+#we first used the prevalence rates from more recent Grotzinger publication (https://pubmed.ncbi.nlm.nih.gov/35973856/), but got inflated h2 so reverted back to 
+#Grotzinger 2022 paper pop prevalence
+population.prev <- c(.01, .02, 0.05, 0.21, 0.2, 0.3, NA, 0.012, 0.025, 0.009, 0.008)
+
+#A folder of LD scores used as the independent variable in LDSC (ld) and LDSC weights (wld).
+ld <- "../raw_data/eur_w_ld_chr/"
+wld <- "../raw_data/eur_w_ld_chr/"
+
+#since the trait names are the same with previous step, this line is commented 
+trait.names <- trait.names
+
+#run LDSC
+LDSCoutput<-ldsc(traits=traits,sample.prev=sample.prev,population.prev=population.prev,ld=ld,wld=wld,trait.names=trait.names)
+
+
+#check covariance matrix (on the liability scale for case/control designs)
+#View(LDSCoutput$S)
+
+#save the ldsc output as a .RData file for later use
+save(LDSCoutput, file= "/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/LDSC_11traits.RData")
+
+
+############################################################################################################
+### fit common factor model without SNPs
+############################################################################################################
+setwd("/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/")
+# run using DWLS
+CommonFactor_DWLS <- commonfactor(covstruc = LDSCoutput, estimation= "DWLS")
+
+#print output
+CommonFactor_DWLS
+
+#save output
+save(CommonFactor_DWLS, file="ModelwithoutSNP_11traits.Rdata" )
+
+#running robustness check saving the residuals of each trait
+
+load('/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/LDSC_11traits.RData')
+
+CFA <- 'P =~ NA*SCZ + BIP + ADHD + MDD + ANX + PTSD + ALCH + ASD +OCD + AN + TS
+P~~1*P
+'
+
+CFAfit <- usermodel(LDSCoutput, #calling this based on your previous script 
+                    estimation = "DWLS", 
+                    model = CFA, 
+                    CFIcalc = TRUE, 
+                    std.lv = TRUE, 
+                    imp_cov = TRUE) # If setting this to TRUE this should in theory give us exactly the corr matrix that I wrote out above.
+CFAfit
+
+save(CFAfit, file="ModelwithoutSNP_11traits_residuals.Rdata" )
+
+############################################################################################################
+###step 3: run sumstats() to prepare the summary statistics for GWAS
+############################################################################################################
+#should be the same as the name of the files used for the munge function in Step 1 above and the files should be in the same listed order used for the ldsc function in step 2. therefore this line is commentted 
+setwd("/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/")
+files <- files
+
+#for sumstats() the reference panel changed to 1000g becuase it include more SNPs
+ref= "../raw_data/reference.1000G.maf.0.005.txt.gz"
+
+
+#same trait names in the same order as above, therefore this line is commented
+trait.names <- trait.names
+
+#N is Neff, same as before
+N=N
+
+#Whether the SEs are on a logistic scale. 
+se.logit=c(T, T, T, T, T, T, F, T, T, T, T)
+
+OLS=c(F, F, F, F, F, F, T, F, F, F, F)
+#Whether the phenotype was a dichotomous outcome for which there are only Z-statistics in the summary statistics file -or- it was a dichotomous outcome analyzed using an OLS estimator,
+linprob=c(F, F, F, F, F, F, F, F, F, F, F)
+
+
+#same threshold, therefore commented
+#info.filter=.6
+#maf.filter=0.01
+
+#running sumstats
+sumstats <-sumstats(files=files,ref=ref,trait.names=trait.names,
+                      se.logit=se.logit,OLS=OLS,linprob=linprob,
+                      info.filter=info.filter,
+                      maf.filter=maf.filter,keep.indel=FALSE,parallel=TRUE,cores=100, N=N)
+
+#save the cleaned SNP data to a r.data file for GWAS analysis
+save(sumstats, file="/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/P_sumstats_11traits.RData")
+```
+
+create_chunk_universal.R script is used to subset the SNPs to be included in one chunk. 
+it takes two argument: the sumstats and wkdir
+it divide the number of SNP the sumstats have by 10,000 and create a row_chunk.csv file list the begin and end row of the chunk. 
+e.g. 1, 100000
+     100001,200000
+So for each job, the script will only analysis 100000 SNPs.
+
+```{r, file='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/software/create_chunk_universal.R'}
+```
+
+Rscript ../software/create_chunk_universal.R P_sumstats_11traits.RData ./
+
+after the row_chunk.csv is created, the arrary_geneSEM.sh script will automatically read the chunk file and tell the genomicSEM script what to analysis
+
+Then the LDSC outputs and Sumstats will be used in the GWAS
+```{bash, file = '/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/array_genomicSEM_p.sh'}
+```
+
+```{r, file='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/P_genomicSEM_meta.R'}
+```
+
+
+```{r}
+
+#############################################################
+#merge the results
+#############################################################
+
+setwd('/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/')
+getwd()
+
+library(dplyr)
+
+# get list of all result files in directory
+
+files <- list.files(pattern = "^p_gwas_")
+
+# get the column names from one of the files
+load(files[1])
+
+colnames <- colnames(result)
+
+#remove the example result
+remove(result)
+
+# initialize an empty data frame and give the colname names
+combined_data <- data.frame(matrix(ncol = 19, nrow = 0))
+
+colnames(combined_data) <- colnames
+
+# loop through each file, read in data, and bind to existing data frame
+for (file in files) {
+  load(file)
+  data <- result
+  combined_data <- rbind(combined_data, data)
+}
+
+# sort data by row number
+combined_data <- combined_data %>% arrange(row_number())
+
+#save as rds file
+saveRDS(combined_data, file = 'p_gwas.rds')
+
+#rename few columns and save as txt file as well. 
+p_gwas<- combined_data
+
+setnames(p_gwas, "Pval_Estimate", "P")
+setnames(p_gwas, "se_c", "SE")
+
+fwrite(p_gwas, "/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/p_gwas.txt", sep = "\t", col.names = TRUE)
+
+```
+```{r}
+library(qqman)
+
+manhattan(p_gwas)
+
+
+```
+
+
+# PART 2: GWAS-by-subtraction 
+
+calcualting p expected N (N_hat)
+```{r}
+#restrict to MAF of 40% and 10%
+p_gwas2<-subset(p_gwas, p_gwas$MAF <= .4 & p_gwas$MAF >= .1)
+#calculate expected sample size (N_hat)
+N_hat<-mean(1/((2*p_gwas2$MAF*(1-p_gwas2$MAF))*p_gwas2$SE^2))
+
+N_hat
+#515918.3
+```
+data preparation script for GbS
+```{r, file='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/GbS/GbS_dataprep.R'}
+```
+
+
+args = commandArgs(trailingOnly=TRUE)
+wkdir = as.character(args[1]) # the working directory where the summary statistics are, and where you want to save the output
+trait_sumstat = as.character(args[2]) # name of the summary statistics, e.g. iPSYCH-PGC_ASD_Nov2017
+trait_name = as.character(args[3]) # name you give for the trait, e.g. ASD
+sample_size = as.numeric(args[4]) # effective sample size for the trait, is NA if it is SNP specific Neff or Total N if it is continuous trait
+sample_prev = as.numeric(args[5]) # smaple prevalence of the trait
+pop_prev = as.numeric(args[6]) # population prevalence of the trait
+se.logit = as.logical(args[7]) #if the SE based on a logistical scale, e.g. OddRatio
+ols = as.logical(args[8]) # if continuous, ols if T, if binary, ols is F. 
+
+
+```{bash}
+
+#scz
+Rscript ../GbS_dataprep.R ./ /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/scz_withneff.txt SCZ NA 0.5 0.01 T F
+
+Rscript ../../software/create_chunk_universal.R P_SCZ_Sumstats.Rdata ./
+
+
+#bip
+
+Rscript ../GbS_dataprep.R ./ /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/bip_withneff.txt BIP NA 0.5 0.02 T F
+
+
+Rscript ../../software/create_chunk_universal.R P_BIP_Sumstats.Rdata ./
+
+#ADHD
+
+Rscript ../GbS_dataprep.R ./ /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/adhd_withneff.txt ADHD NA 0.5 0.05 T F
+
+
+Rscript ../../software/create_chunk_universal.R P_ADHD_Sumstats.Rdata ./
+
+
+#MDD
+
+
+Rscript ../GbS_dataprep.R ./ /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/mdd_withneff.txt MDD NA 0.5 0.21 T F
+
+
+Rscript ../../software/create_chunk_universal.R P_MDD_Sumstats.Rdata ./
+
+#anx
+
+Rscript ../GbS_dataprep.R ./ /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/anx_withneff.txt ANX NA 0.5 0.2 T F
+
+Rscript ../../software/create_chunk_universal.R P_ANX_Sumstats.Rdata ./
+
+#ptsd
+
+
+Rscript ../GbS_dataprep.R ./ /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/ptsd_withneffperSNP.txt PTSD NA 0.5 0.3 T F
+
+
+Rscript ../../software/create_chunk_universal.R P_PTSD_Sumstats.Rdata ./
+
+
+#alch
+
+Rscript ../GbS_dataprep.R ./ /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/alch_withtotaln.txt ALCH NA NA NA F T
+
+
+Rscript ../../software/create_chunk_universal.R P_ALCH_Sumstats.Rdata ./
+
+#asd
+
+Rscript ../GbS_dataprep.R ./ /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/asd_withneff.txt ASD NA 0.5 0.012 T F
+
+Rscript ../../software/create_chunk_universal.R P_ASD_Sumstats.Rdata ./
+
+#OCD
+
+Rscript ../GbS_dataprep.R ./ /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/ocd_withneff.txt OCD NA 0.5 0.025 T F
+
+Rscript ../../software/create_chunk_universal.R P_OCD_Sumstats.Rdata ./
+
+#an
+
+Rscript ../GbS_dataprep.R ./ /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/an_withneff.txt AN NA 0.5 0.009 T F
+
+Rscript ../../software/create_chunk_universal.R P_AN_Sumstats.Rdata ./
+
+#ts
+
+Rscript ../GbS_dataprep.R ./ /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/ts_withneff.txt TS NA 0.5 0.008 T F
+
+Rscript ../../software/create_chunk_universal.R P_TS_Sumstats.Rdata ./
+
+```
+
+
+args = commandArgs(trailingOnly=TRUE)
+beginsub = as.numeric(args[1]) #the first line of this chunk
+endsub = as.numeric(args[2]) #the end line of this chunk
+NameP = as.character(args[3]) # the name you want to give to the trait p, e.g. ADHDp
+NameNonP = as.character(args[4]) # the name you want to give to the non-p, e.g. ADHDnonP
+step=as.numeric(args[5]) #furter dividing the job according to Demange github
+ldsc=as.character(args[6]) #the file name of the LDSC of the current trait
+sumstats=as.character(args[7]) #the name of the sumstats() output
+trait=as.character(args[8]) #the name of the trait you are subtracting, e.g. ADHD
+
+
+```{r, file='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/GbS/GbS_gwas.R'}
+```
+
+```{bash, file='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/GbS/run_GbS_gwas.sh'}
+```
+merge the non-p results
+
+```{r, file='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/GbS/Gbs_merge.Rmd'}
+```
+
+
+###CALCULATING TOTAL SAMPLE SIZE FOR THE NON-P LATENT FACTORS###
+After merging the ouputs, we calculated the non-p NEFF following Demange's method. Script Below. Taken from Demange Github.
+
+Notes from Demange: 
+Because of the Cholesky model, we need to adjust with the residual heritabilities 
+(the estimates for the path loadings between the latent variable and the measured variable). 
+I use here the sqrt of the heritability(=path loadings) with 4 decimals, as reported in the preliminary figures. 
+
+
+```{r}
+
+setwd('final_sumstats/')
+
+######################################################
+####### SCZ #######
+#model_withoutSNP$results
+
+
+#path loading from nonp SCZ to SCZ
+0.3491481 * 0.3491481
+# 0.1219044
+
+SCZ <- fread("SCZ_nonp_gwas_results.txt")
+head(SCZ)
+
+SCZ$Neff <- ((SCZ$Z_Estimate/(SCZ$est*sqrt(0.1219)))^2)/(2*SCZ$MAF*(1-SCZ$MAF))   
+summary(SCZ$Neff)
+
+# Apply a threshold for MAF as low and high MAF can bias the result. 
+SCZ_maf_thresh <- SCZ[SCZ$MAF >= .10 & SCZ$MAF <= .40,]
+SCZ_maf_thresh$N <- mean(SCZ_maf_thresh$Neff)
+SCZ_maf_thresh$N <- floor(SCZ_maf_thresh$N)
+summary(SCZ_maf_thresh$N)
+
+# SCZ Total sample size: 99911
+
+######################################################
+
+##BIP
+#setwd('final_sumstats/')
+
+#path loading from nonp BIP to BIP
+0.3034081 * 0.3034081
+# 0.09205648
+
+BIP <- fread("BIP_nonp_gwas_results.txt")
+head(BIP)
+
+BIP$Neff <- ((BIP$Z_Estimate/(BIP$est*sqrt(0.0921)))^2)/(2*BIP$MAF*(1-BIP$MAF))   
+summary(BIP$Neff)
+
+# Apply a threshold for MAF as low and high MAF can bias the result. 
+BIP_maf_thresh <- BIP[BIP$MAF >= .10 & BIP$MAF <= .40,]
+BIP_maf_thresh$N <- mean(BIP_maf_thresh$Neff)
+BIP_maf_thresh$N <- floor(BIP_maf_thresh$N)
+summary(BIP_maf_thresh$N)
+
+# BIP Total sample size: 89260
+
+######################################################
+
+##ADHD
+#setwd('final_sumstats/')
+#path loading from nonp ADHD to ADHD
+0.3374628 * 0.3374628
+# 0.1138811
+
+ADHD <- fread("ADHD_nonp_gwas_results.txt")
+
+ADHD$Neff <- ((ADHD$Z_Estimate/(ADHD$est*sqrt(0.1139)))^2)/(2*ADHD$MAF*(1-ADHD$MAF))   
+summary(ADHD$Neff)
+
+# Apply a threshold for MAF as low and high MAF can bias the result. 
+ADHD_maf_thresh <- ADHD[ADHD$MAF >= .10 & ADHD$MAF <= .40,]
+ADHD_maf_thresh$N <- mean(ADHD_maf_thresh$Neff)
+ADHD_maf_thresh$N <- floor(ADHD_maf_thresh$N)
+summary(ADHD_maf_thresh$N)
+
+# ADHD Total sample size: 83510
+
+######################################################
+
+###MDD
+
+#setwd('final_sumstats/')
+
+#path loading from nonp MDD to MDD
+0.1335717 * 0.1335717
+#0.0178414
+
+MDD <- fread("MDD_nonp_gwas_results.txt")
+head(MDD)
+
+MDD$Neff <- ((MDD$Z_Estimate/(MDD$est*sqrt(0.0178)))^2)/(2*MDD$MAF*(1-MDD$MAF))   
+summary(MDD$Neff)
+
+# Apply a threshold for MAF as low and high MAF can bias the result. 
+MDD_maf_thresh <- MDD[MDD$MAF >= .10 & MDD$MAF <= .40,]
+MDD_maf_thresh$N <- mean(MDD_maf_thresh$Neff)
+MDD_maf_thresh$N <- floor(MDD_maf_thresh$N)
+summary(MDD_maf_thresh$N)
+
+# MDD Total sample size: 756159  
+
+
+######################################################
+##ANX
+#setwd('final_sumstats/')
+
+#path loading from nonp ANX to ANX
+0.2949060 * 0.2949060
+# 0.08696955
+
+ANX <- fread("ANX_nonp_gwas_results.txt")
+
+ANX$Neff <- ((ANX$Z_Estimate/(ANX$est*sqrt(0.0870)))^2)/(2*ANX$MAF*(1-ANX$MAF))   
+summary(ANX$Neff)
+
+# Apply a threshold for MAF as low and high MAF can bias the result. 
+ANX_maf_thresh <- ANX[ANX$MAF >= .10 & ANX$MAF <= .40,]
+ANX_maf_thresh$N <- mean(ANX_maf_thresh$Neff)
+ANX_maf_thresh$N <- floor(ANX_maf_thresh$N)
+summary(ANX_maf_thresh$N)
+
+# ANX Total sample size: 41380
+
+
+######################################################
+##PTSD
+#setwd('final_sumstats/')
+
+#path loading from nonp PTSD to PTSD
+0.1505939 * 0.1505939
+# 0.02267852
+
+PTSD <- fread("PTSD_nonp_gwas_results.txt")
+
+PTSD$Neff <- ((PTSD$Z_Estimate/(PTSD$est*sqrt(0.0227)))^2)/(2*PTSD$MAF*(1-PTSD$MAF))   
+summary(PTSD$Neff)
+
+# Apply a threshold for MAF as low and high MAF can bias the result. 
+PTSD_maf_thresh <- PTSD[PTSD$MAF >= .10 & PTSD$MAF <= .40,]
+PTSD_maf_thresh$N <- mean(PTSD_maf_thresh$Neff)
+PTSD_maf_thresh$N <- floor(PTSD_maf_thresh$N)
+summary(PTSD_maf_thresh$N)
+
+# PTSD Total sample size:28896   
+
+
+######################################################
+##ALCH
+#setwd('final_sumstats/')
+
+#path loading from nonp ALCH to ALCH
+0.11879950*0.11879950
+#0.01411332
+
+
+ALCH <- fread("ALCH_nonp_gwas_results.txt")
+
+ALCH$Neff <- ((ALCH$Z_Estimate/(ALCH$est*sqrt(0.0141)))^2)/(2*ALCH$MAF*(1-ALCH$MAF))   
+summary(ALCH$Neff)
+
+# Apply a threshold for MAF as low and high MAF can bias the result. 
+ALCH_maf_thresh <- ALCH[ALCH$MAF >= .10 & ALCH$MAF <= .40,]
+ALCH_maf_thresh$N <- mean(ALCH_maf_thresh$Neff)
+ALCH_maf_thresh$N <- floor(ALCH_maf_thresh$N)
+summary(ALCH_maf_thresh$N)
+
+# ALCH Total sample size: 340993  
+
+
+######################################################
+##ASD
+#setwd('final_sumstats/')
+
+#path loading from nonp ASD to ASD
+0.3086676 * 0.3086676
+# 0.09527569
+
+ASD <- fread("ASD_nonp_gwas_results.txt")
+
+ASD$Neff <- ((ASD$Z_Estimate/(ASD$est*sqrt(0.0953)))^2)/(2*ASD$MAF*(1-ASD$MAF))   
+summary(ASD$Neff)
+
+# Apply a threshold for MAF as low and high MAF can bias the result. 
+ASD_maf_thresh <- ASD[ASD$MAF >= .10 & ASD$MAF <= .40,]
+ASD_maf_thresh$N <- mean(ASD_maf_thresh$Neff)
+ASD_maf_thresh$N <- floor(ASD_maf_thresh$N)
+summary(ASD_maf_thresh$N)
+
+# ASD Total sample size:35333   
+
+######################################################
+##OCD
+#setwd('final_sumstats/')
+
+#path loading from nonp OCD to OCD
+0.5067476 * 0.5067476
+# 0.2567931
+
+OCD <- fread("OCD_nonp_gwas_results.txt")
+
+OCD$Neff <- ((OCD$Z_Estimate/(OCD$est*sqrt(0.2568)))^2)/(2*OCD$MAF*(1-OCD$MAF))   
+summary(OCD$Neff)
+
+# Apply a threshold for MAF as low and high MAF can bias the result. 
+OCD_maf_thresh <- OCD[OCD$MAF >= .10 & OCD$MAF <= .40,]
+OCD_maf_thresh$N <- mean(OCD_maf_thresh$Neff)
+OCD_maf_thresh$N <- floor(OCD_maf_thresh$N)
+summary(OCD_maf_thresh$N)
+
+# OCD Total sample size: 5734 
+
+######################################################
+##AN
+#setwd('final_sumstats/')
+
+#path loading from nonp AN to AN
+0.3706266 * 0.3706266
+#  0.1373641
+
+AN <- fread("AN_nonp_gwas_results.txt")
+
+AN$Neff <- ((AN$Z_Estimate/(AN$est*sqrt(0.1374)))^2)/(2*AN$MAF*(1-AN$MAF))  
+summary(AN$Neff)
+
+# Apply a threshold for MAF as low and high MAF can bias the result. 
+AN_maf_thresh <- AN[AN$MAF >= .10 & AN$MAF <= .40,]
+AN_maf_thresh$N <- mean(AN_maf_thresh$Neff)
+AN_maf_thresh$N <- floor(AN_maf_thresh$N)
+summary(AN_maf_thresh$N)
+
+# AN Total sample size:35904
+
+######################################################
+##TS
+#setwd('final_sumstats/')
+
+#path loading from nonp TS to TS
+0.4607972 * 0.4607972
+# 0.2123341
+
+TS <- fread("TS_nonp_gwas_results.txt")
+
+TS$Neff <- ((TS$Z_Estimate/(TS$est*sqrt(0.2123)))^2)/(2*TS$MAF*(1-TS$MAF))   
+summary(TS$Neff)
+
+# Apply a threshold for MAF as low and high MAF can bias the result. 
+TS_maf_thresh <- TS[TS$MAF >= .10 & TS$MAF <= .40,]
+TS_maf_thresh$N <- mean(TS_maf_thresh$Neff)
+TS_maf_thresh$N <- floor(TS_maf_thresh$N)
+summary(TS_maf_thresh$N)
+
+# TS Total sample size:9583
+
+################################################
+
+#SCZ = 99911
+#BIP = 89260
+#ADHD = 83510
+#MDD = 756159
+#ANX = 41380
+#PTSD =28896
+#ALCH =340993
+#ASD = 35333
+#OCD = 5734
+#AN = 35904
+#TS = 9583
+
+
+#Then we put those numbers to the LDSC script before, to run the LDSC. 
+
+```
+LDSC
+```{r}
+
+setwd("/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/withintrait_LDSC/")
+############################################################################################################
+####STEP 1: munge() ###
+############################################################################################################
+#create vector of the names of the summary statistics files
+files <- c("../final_sumstats/SCZ_nonp_gwas_results.txt",
+           "../final_sumstats/BIP_nonp_gwas_results.txt",
+           "../final_sumstats/ADHD_nonp_gwas_results.txt",
+           "../final_sumstats/MDD_nonp_gwas_results.txt", 
+           "../final_sumstats/ANX_nonp_gwas_results.txt",
+           "../final_sumstats/PTSD_nonp_gwas_results.txt",
+           "../final_sumstats/ALCH_nonp_gwas_results.txt", 
+           "../final_sumstats/ASD_nonp_gwas_results.txt", 
+           "../final_sumstats/OCD_nonp_gwas_results.txt", 
+           "../final_sumstats/AN_nonp_gwas_results.txt",
+           "../final_sumstats/TS_nonp_gwas_results.txt")
+
+#define the reference file being used to allign alleles across summary stats, this is the hapmap3 reference panel which has less SNP but better LD estimation apparently. 
+hm3<-"../raw_data/eur_w_ld_chr/w_hm3.snplist"
+
+#name the traits 
+trait.names <- c("SCZnonp", 
+                 "BIPnonp", 
+                 "ADHDnonp",
+                 "MDDnonp", 
+                 "ANXnonp", 
+                 "PTSDnonp", 
+                 "ALCHnonp", 
+                 "ASDnonp", 
+                 "OCDnonp", 
+                 "ANnonp", 
+                 "TSnonp")
+
+#list the sample sizes. Its NA if the SNP level effective sample was included in the file
+N=c(99911, 89260, 83510, 756159, 41380, 28896, 340993, 35333, 5734, 35904, 9583)
+
+#SCZ = 99911
+#BIP = 89260
+#ADHD = 83510
+#MDD = 756159
+#ANX = 41380
+#PTSD =28896
+#ALCH =340993  
+#ASD = 35333
+#OCD = 5734
+#AN = 35904
+#TS = 9583
+
+
+#define the imputation quality filter
+info.filter=0.9
+
+#define the MAF filter
+maf.filter=0.01
+
+#run munge, summary statistics will be munged with the reference file and saved as xxx.sumstats.gz in the current work dir. 
+munge(files=files,hm3=hm3,trait.names=trait.names,N=N,info.filter=info.filter,maf.filter=maf.filter)
+
+############################################################################################################
+###step 2: ldsc() ###
+###obtain the genetic covariance (S) matrix & corresponding sampling covariance matrix (V)
+############################################################################################################
+
+#vector of munged summary statistics
+traits <- c("SCZnonp.sumstats.gz", 
+            "BIPnonp.sumstats.gz", 
+            "ADHDnonp.sumstats.gz", 
+            "MDDnonp.sumstats.gz", 
+            "ANXnonp.sumstats.gz",
+            "PTSDnonp.sumstats.gz", 
+            "ALCHnonp.sumstats.gz", 
+            "ASDnonp.sumstats.gz", 
+            "OCDnonp.sumstats.gz", 
+            "ANnonp.sumstats.gz", 
+            "TSnonp.sumstats.gz")
+
+#sample.prev: A vector of sample prevalences of length equal to the number of traits. 
+#Sample prevalence is calculated as the number of cases over the total number of participants (i.e., cases + controls). 
+#Possible range = 0-1. HOWEVER, if you have access to the sum of effective sample sizes then this should be entered for 
+#munge in the prior step and sample prevalence should be entered as 0.5. If the trait is continuous, the values should equal NA.
+#enter sample prevalence of .5 to reflect that all traits were munged using the sum of effective sample size
+sample.prev <- c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA)
+
+#These estimates can be obtained from a number of sources, such as large scale epidemiological studies. Possible range = 0-1. 
+#Again, if the trait is continuous the values should equal NA.
+population.prev <- c(NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA)
+
+#A folder of LD scores used as the independent variable in LDSC (ld) and LDSC weights (wld).
+ld <- "../raw_data/eur_w_ld_chr/"
+wld <- "../raw_data/eur_w_ld_chr/"
+
+#since the trait names are the same with previous step, this line is commented 
+trait.names <- trait.names
+
+#run LDSC
+LDSCoutput<-ldsc(traits=traits,sample.prev=sample.prev,population.prev=population.prev,ld=ld,wld=wld,trait.names=trait.names)
+
+
+#check covariance matrix (on the liability scale for case/control designs)
+#View(LDSCoutput$S)
+
+#save the ldsc output as a .RData file for later use
+save(LDSCoutput, file= "/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/withintrait_LDSC/LDSC_11nonp.RData")
+
+
+
+```
+LD Clumping for p and non-p
+# LD clumping: we used the 1000g reference panel (EUR) in plink1.9 to do the LD clumping 
+
+```{bash}
+
+module load plink
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/p_gwas_New.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_p_gwase
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_p_gwase.clumped > CLUMP_p_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_p_gwase_new.txt > CLUMP_p_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_p_gwase_sig_independent_signals_New.txt
+
+# p have 200 hits
+
+
+#schizophrenia non-p
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/final_sumstats/SCZ_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_SCZnonp_gwase
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_SCZnonp_gwase.clumped > CLUMP_SCZnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_SCZnonp_gwase_new.txt > CLUMP_SCZnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_SCZnonp_gwase_sig_independent_signals_New.txt
+
+# 114 hits
+
+#Bipolar Non-p
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/final_sumstats/BIP_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_BIPnonp_gwase
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_BIPnonp_gwase.clumped > CLUMP_BIPnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_BIPnonp_gwase_new.txt > CLUMP_BIPnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_BIPnonp_gwase_sig_independent_signals_New.txt
+
+# 19 hits
+
+#ADHD
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/final_sumstats/ADHD_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_ADHDnonp_gwase
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_ADHDnonp_gwase.clumped > CLUMP_ADHDnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_ADHDnonp_gwase_new.txt > CLUMP_ADHDnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_ADHDnonp_gwase_sig_independent_signals_New.txt
+
+#11
+
+#MDD
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/final_sumstats/MDD_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_MDDnonp_gwase
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_MDDnonp_gwase.clumped > CLUMP_MDDnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_MDDnonp_gwase_new.txt > CLUMP_MDDnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_MDDnonp_gwase_sig_independent_signals_New.txt
+
+#0 HIT
+
+#ANX
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/final_sumstats/ANX_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_ANXnonp_gwase
+
+# no significant results
+
+#PTSD
+
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/final_sumstats/PTSD_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_PTSDnonp_gwase
+
+# no significant 
+
+#ALCH
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/final_sumstats/ALCH_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_ALCHnonp_gwase
+
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_ALCHnonp_gwase.clumped > CLUMP_ALCHnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_ALCHnonp_gwase_new.txt > CLUMP_ALCHnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_ALCHnonp_gwase_sig_independent_signals_New.txt
+
+#2 HITS
+
+
+#ASD
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/final_sumstats/ASD_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_ASDnonp_gwase
+
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_ASDnonp_gwase.clumped > CLUMP_ASDnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_ASDnonp_gwase_new.txt > CLUMP_ASDnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_ASDnonp_gwase_sig_independent_signals_New.txt
+
+#no independent hit
+
+
+#OCD
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/final_sumstats/OCD_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_OCDnonp_gwase
+
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_OCDnonp_gwase.clumped > CLUMP_OCDnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_OCDnonp_gwase_new.txt > CLUMP_OCDnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_OCDnonp_gwase_sig_independent_signals_New.txt
+
+#NO INDEPENDENT HITS
+
+#AN
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/final_sumstats/AN_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_ANnonp_gwase
+
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_ANnonp_gwase.clumped > CLUMP_ANnonp_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_ANnonp_gwase_new.txt > CLUMP_ANnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_ANnonp_gwase_sig_independent_signals_New.txt
+
+#6 hit
+
+#TS
+
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/final_sumstats/TS_nonp_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_TSnonp_gwase
+
+
+# get only the rsid TSd pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_TSnonp_gwase.clumped > CLUMP_TSnonp_gwase_new.txt
+
+# create a file with only the significTSt independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_TSnonp_gwase_new.txt > CLUMP_TSnonp_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_TSnonp_gwase_sig_independent_signals_New.txt
+
+#0 HITS
+
+
+```
+
+the sh script to run all LDSC with given traits and prevelance
+
+```{bash, file = '/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/external_traits_ldsc/run_LDSC.sh'}
+
+```
+
+the script to run LDSC
+
+```{r, file='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/external_traits_ldsc/LDSC_universal.R'}
+```
+
+the file used to extract the rgs and SE
+
+```{r, file='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/external_traits_ldsc/ldsc_cor_se_extract.Rmd'}
+```
+
+ggplot for the external trait genetic correlation
+```{r, file = '/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/script/P-nonP_rGs_external traits.Rmd'}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
