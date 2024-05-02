@@ -9382,7 +9382,7 @@ robustness_check/ldsc_nonp_externaltrait_residuals/genomicSEM_ldsc_externaltrait
 robustness_check/ldsc_nonp_externaltrait_residuals/genomicSEM_ldsc_externaltrait_scripts_DON'TUSE/ldsc_cor_se_extract_genomicSEM.Rmd
 robustness_check/ldsc_nonp_externaltrait_residuals/genomicSEM_ldsc_externaltrait_scripts_DON'TUSE/LDSC_universal_genomicSEM.R
 robustness_check/ldsc_nonp_externaltrait_residuals/genomicSEM_ldsc_externaltrait_scripts_DON'TUSE/run_LDSC_genomicSEM.sh
-script/METAL
+script_dump/METAL
 final_sumstats_gbs/ADHD_nonp_gwas_results.rds
 final_sumstats_gbs/ADHD_nonp_gwas_results.txt
 final_sumstats_gbs/ADHDnonP_manhatten.png
@@ -9570,6 +9570,7 @@ robustness_check/p_gwas/CLUMP_p_gwase.nosex
 robustness_check/p_gwas/p_gwas_results.rds
 robustness_check/p_gwas/p_gwas_results.txt
 script/METAL
+script_dump/METAL
 script_dump/METAL
 script_dump/METAL
 script_dump/METAL
