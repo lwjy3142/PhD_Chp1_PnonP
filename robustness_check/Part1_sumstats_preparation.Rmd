@@ -5,6 +5,9 @@ author: "Wangjingyi Liao & Engin Keser"
 date: "2023-11-22"
 output: html_document
 ---
+Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
+
+Title of the script: "Part1_sumstats_preparation"
 
 ```{r setup, include=FALSE}
 
@@ -14,7 +17,10 @@ knitr::opts_chunk$set(eval = FALSE)
 
 ```
 
+formatting per trait
 ```{R}
+
+setwd('./')
 #SCZ
 
 scz <- fread('raw_data/SCZ/PGC3_SCZ_wave3.european.autosome.public.v3.vcf.tsv.gz')
@@ -26,7 +32,7 @@ scz$Neff<- scz$NEFF*2
 
 scz$NEFF <- NULL
 
-fwrite(scz, 'genomicSEM/scz_withneff.txt', sep = '\t', col.names = T)
+fwrite(scz, './scz_withneff.txt', sep = '\t', col.names = T)
 
 #the following text was found in the paper: 'In each individual cohort, association testing was based on an additive logistic regression model using PLINK'.
 

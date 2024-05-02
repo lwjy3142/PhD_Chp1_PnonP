@@ -6,14 +6,18 @@ date: "2023-11-22"
 output: html_document
 ---
 
+Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
+
+Title of the script: "Part4_LDSCnonp"
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(eval = FALSE)
 ```
 
 
 ```{r}
-
-setwd("/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/")
+#set directory to where all nonp sumstats are stored
+setwd("./nonp_residuals_sumstats/")
 library(GenomicSEM)
 ############################################################################################################
 ####STEP 1: munge() ###
@@ -32,7 +36,7 @@ files <- c("SCZ_nonp_gwas_results.txt",
            "TS_nonp_gwas_results.txt")
 
 #define the reference file being used to allign alleles across summary stats, this is the hapmap3 reference panel which has less SNP but better LD estimation apparently. 
-hm3<-"/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/eur_w_ld_chr/w_hm3.snplist"
+hm3<-"../../raw_data/eur_w_ld_chr/w_hm3.snplist"
 
 #name the traits 
 trait.names <- c("SCZnonp", 
@@ -50,6 +54,7 @@ trait.names <- c("SCZnonp",
 #list the sample sizes. Its NA if the SNP level effective sample was included in the file
 N=c(76976, 69443, 70996, 199983, 31787, 29574, 327706, 34514, 5754, 35212, 9590)
 
+#outputs copied from the end of Part 3 script
 '
 [1] "Number of rows in SCZ : 3746806 76976.4285916118"                                                                               
 [1] "Number of rows in BIP : 3746806 69443.0026535736"                                                                               
@@ -62,8 +67,6 @@ N=c(76976, 69443, 70996, 199983, 31787, 29574, 327706, 34514, 5754, 35212, 9590)
 [1] "Number of rows in OCD : 3746806 5754.95036135044"      
 [1] "Number of rows in AN : 3746806 35212.0061400656"                                                                                
 [1] "Number of rows in TS : 3746806 9590.39597121959" 
-
-
 '
 
 

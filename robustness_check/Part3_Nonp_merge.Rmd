@@ -5,7 +5,9 @@ author: "Wangjingyi Liao & Engin Keser"
 date: "2023-11-22"
 output: html_document
 ---
+Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
 
+Title of the script: "Part3_Nonp_merge"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(eval = FALSE)
@@ -71,6 +73,7 @@ getwd()
 
 library(dplyr)
 library(qqman)
+library(data.table)
 
 # get list of all .rds files in directory
 #files <- list.files(pattern = "\\.rds$")
@@ -97,8 +100,10 @@ for (file in files) {
   combined_data <- rbind(combined_data, test)
 }
 
+#save as RDS
 saveRDS(combined_data, file = 'SCZ_nonp_gwas_results.rds')
 
+#basic manhattan visualization, better manhattan plot script is in script Part 7
 manhattan(combined_data, p = 'Pval_Estimate')
 
 
@@ -450,11 +455,12 @@ manhattan(combined_data, p = 'Pval_Estimate')
 
 in bash, copy all rds files to the nonp_residual_sumstats folder
 ```{bash}
-
+#mkdir nonp_residual_sumstats
 cp *_nonp_gwas_results.rds ./nonp_residuals_sumstats
 
 ```
-#rds file convert to txt file and check the SNP number. 
+
+all rds file convert to txt file and check the SNP number to check if missing batches. change the column names and calcualte the expected sample size of Nonps using Mallard 2019 method
 
 ```{r}
 setwd('./nonp_residuals_sumstats/')

@@ -1,11 +1,14 @@
 ---
-title: "Part6_nonp_sumstats_clumping"
-author: "Wangjingyi Liao"
+Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
+Title of the script: "Part 6 - nonp sumstats clumping"
+author: "Wangjingyi Liao & Engin Keser"
 date: "2024-02-23"
 output: html_document
 ---
 
+Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
 
+Title of the script: "Part 6 - nonp sumstats clumping"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(eval = FALSE)
 ```
@@ -48,8 +51,8 @@ wc CLUMP_p_gwase_sig_independent_signals_New.txt
 
 #schizophrenia non-p
 
-plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
---clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/SCZ_nonp_gwas_results.txt  \
+plink --bfile ./disease_specificity/ldpruning/EUR \
+--clump ./disease_specificity/robustness_check/nonp_residuals_sumstats/SCZ_nonp_gwas_results.txt  \
 --clump-kb 250 \
 --clump-r2 0.1 \
 --clump-field P \
@@ -72,8 +75,8 @@ wc CLUMP_SCZnonp_gwase_sig_independent_signals_New.txt
 
 #Bipolar Non-p
 
-plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
---clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/BIP_nonp_gwas_results.txt  \
+plink --bfile ./disease_specificity/ldpruning/EUR \
+--clump ./disease_specificity/robustness_check/nonp_residuals_sumstats/BIP_nonp_gwas_results.txt  \
 --clump-kb 250 \
 --clump-r2 0.1 \
 --clump-field P \
@@ -96,8 +99,8 @@ wc CLUMP_BIPnonp_gwase_sig_independent_signals_New.txt
 
 #ADHD
 
-plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
---clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/ADHD_nonp_gwas_results.txt  \
+plink --bfile ./disease_specificity/ldpruning/EUR \
+--clump ./disease_specificity/robustness_check/nonp_residuals_sumstats/ADHD_nonp_gwas_results.txt  \
 --clump-kb 250 \
 --clump-r2 0.1 \
 --clump-field P \
@@ -120,8 +123,8 @@ wc CLUMP_ADHDnonp_gwase_sig_independent_signals_New.txt
 
 #MDD
 
-plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
---clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/MDD_nonp_gwas_results.txt  \
+plink --bfile ./disease_specificity/ldpruning/EUR \
+--clump ./disease_specificity/robustness_check/nonp_residuals_sumstats/MDD_nonp_gwas_results.txt  \
 --clump-kb 250 \
 --clump-r2 0.1 \
 --clump-field P \
@@ -143,8 +146,8 @@ wc CLUMP_MDDnonp_gwase_sig_independent_signals_New.txt
 #14 HIT
 
 #ANX
-plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
---clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/ANX_nonp_gwas_results.txt  \
+plink --bfile ./disease_specificity/ldpruning/EUR \
+--clump ./disease_specificity/robustness_check/nonp_residuals_sumstats/ANX_nonp_gwas_results.txt  \
 --clump-kb 250 \
 --clump-r2 0.1 \
 --clump-field P \
@@ -169,8 +172,8 @@ wc CLUMP_ANXnonp_gwase_sig_independent_signals_New.txt
 #PTSD
 
 
-plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
---clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/PTSD_nonp_gwas_results.txt  \
+plink --bfile ./disease_specificity/ldpruning/EUR \
+--clump ./disease_specificity/robustness_check/nonp_residuals_sumstats/PTSD_nonp_gwas_results.txt  \
 --clump-kb 250 \
 --clump-r2 0.1 \
 --clump-field P \
@@ -193,8 +196,8 @@ wc CLUMP_PTSDnonp_gwase_sig_independent_signals_New.txt
 
 #ALCH
 
-plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
---clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/ALCH_nonp_gwas_results.txt  \
+plink --bfile ./disease_specificity/ldpruning/EUR \
+--clump ./disease_specificity/robustness_check/nonp_residuals_sumstats/ALCH_nonp_gwas_results.txt  \
 --clump-kb 250 \
 --clump-r2 0.1 \
 --clump-field P \
@@ -219,8 +222,8 @@ wc CLUMP_ALCHnonp_gwase_sig_independent_signals_New.txt
 
 #ASD
 
-plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
---clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/ASD_nonp_gwas_results.txt  \
+plink --bfile ./disease_specificity/ldpruning/EUR \
+--clump ./disease_specificity/robustness_check/nonp_residuals_sumstats/ASD_nonp_gwas_results.txt  \
 --clump-kb 250 \
 --clump-r2 0.1 \
 --clump-field P \
@@ -245,8 +248,8 @@ wc CLUMP_ASDnonp_gwase_sig_independent_signals_New.txt
 
 #OCD
 
-plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
---clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/OCD_nonp_gwas_results.txt  \
+plink --bfile ./disease_specificity/ldpruning/EUR \
+--clump ./disease_specificity/robustness_check/nonp_residuals_sumstats/OCD_nonp_gwas_results.txt  \
 --clump-kb 250 \
 --clump-r2 0.1 \
 --clump-field P \
@@ -270,8 +273,8 @@ wc CLUMP_OCDnonp_gwase_sig_independent_signals_New.txt
 
 #AN
 
-plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
---clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/AN_nonp_gwas_results.txt  \
+plink --bfile ./disease_specificity/ldpruning/EUR \
+--clump ./disease_specificity/robustness_check/nonp_residuals_sumstats/AN_nonp_gwas_results.txt  \
 --clump-kb 250 \
 --clump-r2 0.1 \
 --clump-field P \
@@ -295,8 +298,8 @@ wc CLUMP_ANnonp_gwase_sig_independent_signals_New.txt
 
 #TS
 
-plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
---clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/nonp_residuals_sumstats/TS_nonp_gwas_results.txt  \
+plink --bfile ./disease_specificity/ldpruning/EUR \
+--clump ./disease_specificity/robustness_check/nonp_residuals_sumstats/TS_nonp_gwas_results.txt  \
 --clump-kb 250 \
 --clump-r2 0.1 \
 --clump-field P \

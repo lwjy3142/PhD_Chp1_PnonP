@@ -6,6 +6,9 @@ date: "2023-11-22"
 output: html_document
 ---
 
+Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
+Title of the script: "Part2_GenomicSEM"
+
 ```{r setup, include=FALSE}
 
 library(formatR)
@@ -21,7 +24,7 @@ STEP 2: Data preparation for GenomicSEM: munge and ldsc
 require(GenomicSEM)
 
 #set working direcotry to where all raw summary statistics were kept
-setwd("/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/")
+setwd("./genomicSEM/")
 
 ############################################################################################################
 ####STEP 1: munge() ###
@@ -146,7 +149,7 @@ CommonFactor_ML <- commonfactor(covstruc = LDSCoutput, estimation= "ML")
 
 #print output
 CommonFactor_ML
-
+#the model fit using ML is worse then DWLS and ML model does not fit research aim - use DWLS
 
 #save output
 save(CommonFactor_DWLS, file="ModelwithoutSNP_11traits.Rdata" )
@@ -202,14 +205,17 @@ e.g. 1, 100000
      100001,200000
 So for each job, the script will only analysis 100000 SNPs.
 
-```{r, file='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/script/create_chunk_universal.R'}
+```{r, file='./create_chunk_universal.R'}
 ```
 
 Rscript ../script/create_chunk_universal.R P_sumstats_11traits.RData ./
 
 after the row_chunk.csv is created, the arrary_geneSEM.sh script will automatically read the chunk file and tell the genomicSEM script what to analysis
 
-Then the LDSC outputs and Sumstats will be used in the GWAS
+then the LDSC outputs and sumstats output will be used in the GWAS
+
+----------------------------------
+here is one example of the .sh script taking p as example. 
 ```{bash, file = '/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/array_genomicSEM_P.sh'}
 ```
 

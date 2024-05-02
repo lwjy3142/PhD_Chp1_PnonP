@@ -1,4 +1,6 @@
+# Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
 
+## Title of the script: "Part 7 - nonp Manhattan plot"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(eval = FALSE)
 ```
@@ -20,7 +22,7 @@ library(tidyverse)
 
 # for SCZ
 ```{r}
-setwd('/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check')
+setwd('./disease_specificity/robustness_check')
 gwasResults <- fread('./nonp_residuals_sumstats/SCZ_nonp_gwas_results.txt')
 independenthit <- fread('./nonp_ld_clumping/CLUMP_SCZnonp_gwase_sig_independent_signals_New.txt')
 snpsOfInterest <- as.list(independenthit[,1])
