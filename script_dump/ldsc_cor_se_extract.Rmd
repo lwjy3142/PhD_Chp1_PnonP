@@ -1,0 +1,165 @@
+---
+title: "LDSC_se"
+author: "Wangjingyi Liao"
+date: "2023-06-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+get the SE of the rG
+
+```{r}
+
+library(dplyr)
+
+line_start <- 4568
+line_end <- 4684
+
+# Directory path containing the files
+directory_path <- "/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/"
+
+# List all files ending with "ldsc.log"
+file_list <- list.files(directory_path, pattern = "ldsc.log$", full.names = TRUE)
+
+# Initialize an empty list to store the results
+result_list <- list()
+
+# Loop through each file
+for (file_path in file_list) {
+  con <- file(file_path, "r")
+  lines <- readLines(con, n = -1)
+  close(con)
+  
+  extracted_text <- lines[line_start:line_end]
+  df <- data.frame(do.call(rbind, strsplit(extracted_text, ":", fixed = TRUE)))
+  
+  # Extract content within parentheses into a new column
+  df$SE <- sub(".*\\((.*?)\\).*", "\\1", df$X2)
+  
+  # Remove the parentheses and leading/trailing spaces from the original column
+  df$X2 <- sub("\\(.*\\)", "", df$X2)
+  df$X2 <- trimws(df$X2)
+  
+  # Rename the columns
+  colnames(df) <- c('V1', "Correlation", "SE")
+  df <- df[c(-1, -2), ]
+  
+  # Filter rows based on V1 content
+  df_name <- unique(sub(".* between (\\w+) and .*", "\\1", df$V1))[3]
+  table1 <- df[grep(df_name, df$V1), ]
+  table2 <- df[grep(df_name, df$V1, invert = TRUE), ]
+  
+  # Extract external_trait from V1 column
+  table1$trait <- sub(".* between (\\w+) and .*", "\\1", table1$V1)
+  table2$trait <- sub(".* between (\\w+) and .*", "\\1", table2$V1)
+  
+  table1$external_trait <- sub(".* and (.*)$", "\\1", table1$V1)
+  table2$external_trait <- sub(".* and (.*)$", "\\1", table2$V1)
+  
+  # Rename and reorder columns
+  table1 <- table1[, c('trait', "external_trait", "Correlation", "SE")]
+  colnames(table1) <- c('trait', "external_trait", paste0(unique(table1$trait), "_correlation"), paste0(unique(table1$trait), "_SE"))
+  
+  table2 <- table2[, c('trait', "external_trait", "Correlation", "SE")]
+  colnames(table2) <- c('trait', "external_trait", paste0(unique(table2$trait)[1], "_correlation"), paste0(unique(table2$trait)[1], "_SE"))
+  
+  # Join table2 to table1 based on external_trait
+  joined_table <- left_join(table1[,-1], table2[,-1], by = "external_trait")
+  
+  # Add the joined table to the result list
+  result_list[[file_path]] <- joined_table
+}
+
+
+final_table <- Reduce(function(x, y) merge(x, y, by = "external_trait", all = TRUE), result_list)
+
+
+write.csv(final_table, file = '/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/external_traits_ldsc/alch_ldsc_external_continiou.csv', row.names = FALSE, quote = F)
+
+
+```
+
+```{r}
+
+library(dplyr)
+
+line_start <- 5597
+line_end <- 5713
+
+# Directory path containing the files
+directory_path <- "/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/external_traits_ldsc/"
+
+# List all files ending with "ldsc.log"
+file_list <- list.files(directory_path, pattern = "ldsc.log$", full.names = TRUE)
+
+# Initialize an empty list to store the results
+result_list <- list()
+
+# Loop through each file
+for (file_path in file_list) {
+  con <- file(file_path, "r")
+  lines <- readLines(con, n = -1)
+  close(con)
+  
+  extracted_text <- lines[line_start:line_end]
+  df <- data.frame(do.call(rbind, strsplit(extracted_text, ":", fixed = TRUE)))
+  
+  # Extract content within parentheses into a new column
+  df$SE <- sub(".*\\((.*?)\\).*", "\\1", df$X2)
+  
+  # Remove the parentheses and leading/trailing spaces from the original column
+  df$X2 <- sub("\\(.*\\)", "", df$X2)
+  df$X2 <- trimws(df$X2)
+  
+  # Rename the columns
+  colnames(df) <- c('V1', "Correlation", "SE")
+  df <- df[c(-1, -2), ]
+  
+  # Filter rows based on V1 content
+  df_name <- unique(sub(".* between (\\w+) and .*", "\\1", df$V1))[3]
+  table1 <- df[grep(df_name, df$V1), ]
+  table2 <- df[grep(df_name, df$V1, invert = TRUE), ]
+  
+  # Extract external_trait from V1 column
+  table1$trait <- sub(".* between (\\w+) and .*", "\\1", table1$V1)
+  table2$trait <- sub(".* between (\\w+) and .*", "\\1", table2$V1)
+  
+  table1$external_trait <- sub(".* and (.*)$", "\\1", table1$V1)
+  table2$external_trait <- sub(".* and (.*)$", "\\1", table2$V1)
+  
+  # Rename and reorder columns
+  table1 <- table1[, c('trait', "external_trait", "Correlation", "SE")]
+  colnames(table1) <- c('trait', "external_trait", paste0(unique(table1$trait), "_correlation"), paste0(unique(table1$trait), "_SE"))
+  
+  table2 <- table2[, c('trait', "external_trait", "Correlation", "SE")]
+  colnames(table2) <- c('trait', "external_trait", paste0(unique(table2$trait)[1], "_correlation"), paste0(unique(table2$trait)[1], "_SE"))
+  
+  # Join table2 to table1 based on external_trait
+  joined_table <- left_join(table1[,-1], table2[,-1], by = "external_trait")
+  
+  # Add the joined table to the result list
+  result_list[[file_path]] <- joined_table
+}
+
+
+final_table <- Reduce(function(x, y) merge(x, y, by = "external_trait", all = TRUE), result_list)
+
+
+write.csv(final_table, file = '/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/external_traits_ldsc/allother_ldsc_external_continiou.csv', row.names = FALSE, quote = F)
+
+
+```
+
+```{r}
+alch <- fread('alch_ldsc_external_continiou.csv')
+
+allother <- fread('allother_ldsc_external_continiou.csv')
+
+alltogether <- merge(alch, allother)
+
+write.csv(alltogether, file = '/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/external_traits_ldsc/ldsc_external_continiou.csv', row.names = FALSE, quote = F)
+
+```

@@ -1,14 +1,14 @@
 #!/bin/bash -l
-#SBATCH --output=/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/p_gwas/p_genomicSEM1_%A_%a.out
-#SBATCH --error=/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/p_gwas/p_genomicSEM1_%A_%a.err
+#SBATCH --output=/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM/array_genoSEM_%A_%a.out
+#SBATCH --error=/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM/array_genoSEM_%A_%a.err
 #SBATCH --time=2-00:00:00
 #SBATCH --cpus-per-task=32
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
-#SBATCH --array=2-39
+#SBATCH --array=2-70
 #SBATCH --mem-per-cpu=8GB
 #SBATCH --partition=cpu
-#SBATCH --job-name=p
+#SBATCH --job-name=array_genoSEM
 #SBATCH --mail-type=END
 #SBATCH --mail-user=wangjingyi.liao@kcl.ac.uk
 
@@ -18,7 +18,7 @@ export OPENBLAS_NUM_THREADS=1
 #the array argument should reflect the number of row in the row_chunk.csv
 
 
-WORKdir='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check' #set working directory
+WORKdir='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM/' #set working directory
 
 cd $WORKdir
 
@@ -27,10 +27,8 @@ end_row=$(awk -F',' "NR==$SLURM_ARRAY_TASK_ID {print \$2}" ${WORKdir}/row_chunk.
 
 
 #load necessary modules 
-module load test_switch_kcl/2.0.0-gcc-13.2.0
-source test_switch
-module load  r/4.1.1-gcc-11.4.0-withx-rmath-standalone-python3+-chk-version 
+module load r/4.1.1-gcc-9.4.0-withx-rmath-standalone-python-3.8.12
 
 #Execute program located in current folder
 
-Rscript --vanilla /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/p_genomicSEM.R -s $start_row -e $end_row
+Rscript --vanilla /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM/ptsd_genomicSEM_meta.R -s $start_row -e $end_row

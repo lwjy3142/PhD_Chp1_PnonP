@@ -10,7 +10,58 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(eval = FALSE)
 ```
+p gwas
+```{r}
 
+setwd('/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/p_gwas')
+
+getwd()
+
+library(dplyr)
+library(qqman)
+library(data.table)
+
+# get list of all .rds files in directory
+#files <- list.files(pattern = "\\.rds$")
+
+files <- list.files(pattern = "^p_gwas")
+
+load(files[1])
+
+test <- result
+
+colnames <- colnames(test)
+
+remove(test)
+
+# initialize an empty data frame
+combined_data <- data.frame(matrix(ncol = 27, nrow = 0))
+
+colnames(combined_data) <- colnames
+
+# loop through each file, read in data, and bind to existing data frame
+for (file in files) {
+  load(file)
+  combined_data <- rbind(combined_data, result)
+}
+
+saveRDS(combined_data, file = 'p_gwas_results.rds')
+
+head(combined_data)
+
+colnames(combined_data)[colnames(combined_data) == "Pval_Estimate"] <- "P"
+
+num_rows <- nrow(combined_data)
+#restrict to MAF of 40% and 10%
+combined_data2<-subset(combined_data, combined_data$MAF <= .4 & combined_data$MAF >= .1)
+#calculate expected sample size (N_hat)
+N_hat<-mean(1/((2*combined_data2$MAF*(1-combined_data2$MAF))*combined_data2$se_c^2))
+print(paste("Number of rows in p gwas", ":", num_rows, N_hat))
+
+fwrite(combined_data, file = "p_gwas_results.txt", sep = "\t", col.names = TRUE)
+#manhattan(combined_data, p = 'P')
+
+```
 
 ```{r}
 

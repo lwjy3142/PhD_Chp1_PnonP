@@ -22,7 +22,7 @@ end_row = opt$end
 
 
 #load the LDSC and sumstats from before
-load('/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/LDSC_11traits.RData')
+load('/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/LDSC_11traits.RData')
 
 load('/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/P_sumstats_11traits.RData')
 

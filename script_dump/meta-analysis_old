@@ -1,0 +1,734 @@
+
+# Step 1: Meta-analysis of PTSD and Anxiety (done both in GenomicSEM and METAL)
+We conducted a meta-analysis of Anxiety and PTSD in Genomic SEM and also in METAL, using sample size weighted method in order to control for sample overlap. We checked the 
+correlation between the two results using LDSC.
+
+PTSD GWAS
+Reference:Meier, S., et al. (2019). Genetic Variants Associated With Anxiety and Stress-Related Disorders.
+Link to download: https://ipsych.dk/en/research/downloads
+
+Reference:Duncan, L. E. et al. (2017). Largest GWAS of PTSD (N= 20 070) yields genetic overlap with schizophrenia and sex differences in heritability.
+Link to download: https://figshare.com/articles/dataset/ptsd2018/14672106
+
+
+ANXIETY GWAS 
+Reference: Purves, K. L., et al. (2019). A major role for common genetic variation in anxiety disorders
+Link to download: https://drive.google.com/drive/folders/1fguHvz7l2G45sbMI9h_veQun4aXNTy1v
+We used UKBB sumstats: TotAnx_effect_sumstats
+
+Reference: Otowa et al (2016). Meta-analysis of genome-wide association studies of anxiety disorders. Mol Psychiatry.
+Link to download: https://figshare.com/articles/dataset/anx2016/14842689?file=28570809
+
+
+```{r}
+# check the files of PTSD
+
+library(data.table)
+require(GenomicSEM)
+
+ptsd_duncan <- fread('raw_data/PTSD/SORTED_PTSD_EA9_ALL_study_specific_PCs1.txt')
+
+ptsd_duncan
+
+ptsd_meier <- fread('raw_data/PTSD/daner_woautism_ad_sd8-sd6_woautismstress_cleaned.gz')
+
+ptsd_meier
+
+```
+
+
+## 1.1 Calculate Effective sample sizes as per Genomic SEM Github
+Link: https://github.com/GenomicSEM/GenomicSEM/wiki/2.1-Calculating-Sum-of-Effective-Sample-Size-and-Preparing-GWAS-Summary-Statistics#anxiety-disorder
+
+```{r}
+####====CALCULATE NEFF FOR PTSD=====####
+
+#Duncan
+
+##read in information about sample size per cohort
+PTSDcohort<-read.csv("raw_data/PTSD/PTSDcohorts.csv",header=TRUE)
+
+PTSDcohort
+
+#calculate sample prevalence for each cohort
+PTSDcohort$v<-PTSDcohort$cases/(PTSDcohort$cases+PTSDcohort$controls)
+
+#calculate cohort specific effective sample size
+PTSDcohort$EffN<-4*PTSDcohort$v*(1-PTSDcohort$v)*(PTSDcohort$cases+PTSDcohort$controls)
+
+#calculate sum of effective sample size: 5831.346
+PTSD_duncan_effN <- sum(PTSDcohort$EffN)
+print(PTSD_duncan_effN)
+
+ptsd_duncan$Neff <- PTSD_duncan_effN
+
+fwrite(ptsd_duncan, file = 'raw_data/PTSD/ptsd_duncan_neff.txt', sep = '\t')
+
+#meier
+
+#cases: 9831
+#controls: 19225
+
+Ncases<-9831
+Ncontrols<-19225
+v<-Ncases/(Ncases+Ncontrols)
+TotalNeff<-4*v*(1-v)*(Ncases+Ncontrols)
+
+print(TotalNeff) 
+
+ptsd_meier$Neff <- TotalNeff
+
+fwrite(ptsd_meier, file = 'raw_data/PTSD/ptsd_meier_neff.txt', sep = '\t')
+
+```
+
+PTSD meta-analysis using GenomicSEM
+```{r}
+
+#move to the meta-analysis folder for genomicSEM
+setwd('/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM_ptsd')
+
+##======MUNGE THE FILES======##
+#create vector of the summary statistics files
+files<-c("/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/PTSD/ptsd_duncan_neff.txt", "/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/PTSD/ptsd_meier_neff.txt")
+
+#define the reference file being used to allign alleles across summary stats
+#here we are using hapmap3
+hm3<-"/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/eur_w_ld_chr/w_hm3.snplist"
+
+#name the traits 
+trait.names<-c("PTSD_duncan", "PTSD_meier")
+
+#list the sample sizes.
+N=c(NA,NA)
+
+#definte the imputation quality filter
+info.filter=0.9
+
+#define the MAF filter
+maf.filter=0.01
+
+#run munge
+munge(files=files,hm3=hm3,trait.names=trait.names,N=N,info.filter=info.filter,maf.filter=maf.filter)
+
+
+###=======RUN LDSC========###
+
+
+#vector of munged summary statistics
+traits<-c("PTSD_duncan.sumstats.gz","PTSD_meier.sumstats.gz")
+
+#enter sample prevalence of .5 to reflect that all traits were munged using the sum of effective sample size
+sample.prev<-c(.5,.5)
+
+#vector of population prevalences
+population.prev<-c(0.068,0.068)
+
+#the folder of LD scores
+ld<-"/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/eur_w_ld_chr"
+
+#the folder of LD weights [typically the same as folder of LD scores]
+wld<-"/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/eur_w_ld_chr"
+
+#name the traits
+trait.names<-c("PTSD_duncan","PTSD_meier")
+
+#run LDSC
+LDSCoutput<-ldsc(traits=traits,sample.prev=sample.prev,population.prev=population.prev,ld=ld,wld=wld,trait.names=trait.names)
+
+#optional command to save the output as a .RData file for later use
+save(LDSCoutput,file="LDSCoutput.RData")
+
+
+###=======COMMON FACTOR WITHOUT SNP EFFECT========###
+
+#specify the model
+model <- 'F1 =~ 1*PTSD_duncan + 1*PTSD_meier
+PTSD_duncan ~~ 0* PTSD_duncan
+PTSD_meier ~~ 0* PTSD_meier'
+
+#run the model
+CommonFactor_self<-usermodel(model = model, covstruc = LDSCoutput, estimation= "DWLS")
+
+CommonFactor_self
+
+
+###=======SUMSTATS========###
+
+#require(GenomicSEM)
+
+files <- files
+ref = "/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/reference.1000G.maf.0.005.txt.gz"
+trait.names <- c("PTSD_duncan", "PTSD_meier")
+se.logit = c(T,T)
+info.filter = 0.6
+maf.filter = 0.01
+linprob=c(F,F)
+N=c(NA, NA)
+
+Sumstats <-sumstats(files=files,ref=ref,trait.names=trait.names,
+                    se.logit=se.logit,OLS=NULL,linprob=linprob,
+                    betas=NULL,info.filter=info.filter,
+                    maf.filter=maf.filter,keep.indel=FALSE,parallel=F,cores=100, N = N)
+
+save(Sumstats, file="/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM_ptsd/ptsd_sumstats.Rdata")
+```
+
+```{r}
+
+###=======MULTIVARIATE GWAS========###
+
+#specify the model
+model.2 <- 'F1 =~ 1*PTSD_duncan + 1*PTSD_meier
+F1 ~ SNP
+PTSD_duncan ~~ 0* PTSD_duncan
+PTSD_meier ~~ 0* PTSD_meier'
+
+
+#run the multivariate GWAS using parallel processing
+ptsd_gwas<-userGWAS(covstruc = LDSCoutput, SNPs = Sumstats, model = model.2, sub= ("F1~SNP"), cores=100)
+
+save(ptsd_gwas, file = 'PTSD_genomicSEM_metaanalysis.Rdata')
+
+```
+create_chunk_universal.R script is used to subset the SNPs to be included in one chunk. 
+it takes two argument: the sumstats and wkdir
+it divide the number of SNP the sumstats have by 10,000 and create a row_chunk.csv file list the begin and end row of the chunk. 
+e.g. 1, 100000
+     100001,200000
+So for each job, the script will only analysis 100000 SNPs.
+
+```{r, file='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/software/create_chunk_universal.R'}
+```
+after the row_chunk.csv is created, the arrary_geneSEM.sh script will automatically read the chunk file and tell the genomicSEM script what to analysis
+
+Then the LDSC outputs and Sumstats will be used in the GWAS
+```{bash, file = '/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM_ptsd/array_genomicSEM_ptsd_meta.sh'}
+```
+
+```{r, file='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM_ptsd/ptsd_genomicSEM_meta.R'}
+```
+Merge the PTSD genomicSEM meta-analysis results from chunks
+```{r}
+
+#############################################################
+#merge the results
+#############################################################
+
+library(dplyr)
+
+setwd('/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM_ptsd')
+getwd()
+
+# get list of all result files in directory
+
+files <- list.files(pattern = "^PTSD_metaanalysis_")
+
+# get the column names from one of the files
+load(files[1])
+
+colnames <- colnames(result[[1]])
+
+#remove the example result
+remove(result)
+
+# initialize an empty data frame and give the colname names
+combined_data <- data.frame(matrix(ncol = 21, nrow = 0))
+
+colnames(combined_data) <- colnames
+
+# loop through each file, read in data, and bind to existing data frame
+for (file in files) {
+  load(file[[1]])
+  data <- result[[1]]
+  combined_data <- rbind(combined_data, data)
+}
+
+# sort data by row number
+combined_data <- combined_data %>% arrange(row_number())
+
+#save as rds file
+#saveRDS(combined_data, file = 'ptsd_meta_genomicSEM.rds')
+
+#rename few columns and save as txt file as well. 
+ptsd_meta<- combined_data
+
+setnames(ptsd_meta, "Pval_Estimate", "P")
+
+fwrite(ptsd_meta, "/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM_ptsd/ptsd_meta_genomicSEM.txt", sep = "\t", col.names = TRUE)
+
+#calcualte new effective sample size of PTSD
+
+#restrict to MAF of 40% and 10%
+ptsd_meta2<-subset(ptsd_meta, ptsd_meta$MAF <= .4 & ptsd_meta$MAF >= .1)
+#calculate expected sample size (N_hat)
+N_hat<-mean(1/((2*ptsd_meta2$MAF*(1-ptsd_meta2$MAF))*ptsd_meta2$SE^2))
+#the effective sample size of PTSD metal-analysis is: 
+N_hat
+#22409.42
+```
+
+
+
+PTSD meta-analysis in METAL
+../../software/METAL/build/bin/metal
+```{bash}
+
+#THIS SCRIPT EXECUTES AN ANALYSIS OF TWO STUDIES of PTSD
+#THE RESULTS FOR EACH STUDY ARE STORED IN FILES Inputfile1.txt THROUGH Inputfile8.txt
+
+#LOAD THE INPUT FILES
+
+SEPARATOR TAB
+SCHEME SAMPLESIZE
+
+
+# UNCOMMENT THE NEXT LINE TO ENABLE GenomicControl CORRECTION
+GENOMICCONTROL ON
+
+# === DESCRIBE AND PROCESS THE FIRST INPUT FILE ===
+MARKERLABEL SNP
+ALLELE A1 A2
+EFFECT log(OR)
+PVALUE P 
+WEIGHTLABEL Neff
+PROCESS ptsd_meier_neff.txt
+
+# === DESCRIBE AND PROCESS THE SECOND INPUT FILE ===
+MARKER MarkerName
+ALLELE Allele1 Allele2
+EFFECT Effect
+PVALUE P-value 
+WEIGHTLABEL Neff
+PROCESS ptsd_duncan_neff.txt
+
+# Options to enable tracking of allele frequencies ...
+AVERAGEFREQ      ON
+MINMAXFREQ       ON
+FREQLABEL        Freq1
+
+EFFECT_PRINT_PRECISION 6
+STDERR_PRINT_PRECISION 6
+
+OUTFILE ptsd_sampleweightedMETAL_meta .tbl
+ANALYZE HETEROGENEITY
+
+QUIT
+
+```
+
+
+LDSC to compare METAL and genomicSEM output for PTSD meta-analysis
+
+```{r}
+
+##======MUNGE THE FILES======##
+#create vector of the summary statistics files
+files<-c("meta_analysis/genomicSEM_ptsd/ptsd_meta_genomicSEM.txt", "meta_analysis/METAL/ptsd_sampleweightedMETAL_meta1.tbl")
+
+#define the reference file being used to allign alleles across summary stats
+#here we are using hapmap3
+hm3<-"/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/eur_w_ld_chr/w_hm3.snplist"
+
+#name the traits 
+trait.names<-c("PTSD_genomicSEM", "PTSD_METAL")
+
+#list the sample sizes.
+N=c(22409.42,NA)
+
+#definte the imputation quality filter
+info.filter=0.9
+
+#define the MAF filter
+maf.filter=0.01
+
+#run munge
+munge(files=files,hm3=hm3,trait.names=trait.names,N=N,info.filter=info.filter,maf.filter=maf.filter)
+
+
+###=======RUN LDSC========###
+
+
+#vector of munged summary statistics
+traits<-c("PTSD_genomicSEM.sumstats.gz","PTSD_METAL.sumstats.gz")
+
+#enter sample prevalence of .5 to reflect that all traits were munged using the sum of effective sample size
+sample.prev<-c(.5,.5)
+
+#vector of population prevalences
+population.prev<-c(0.068,0.068)
+
+#the folder of LD scores
+ld<-"/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/eur_w_ld_chr"
+
+#the folder of LD weights [typically the same as folder of LD scores]
+wld<-"/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/eur_w_ld_chr"
+
+#name the traits
+trait.names<-c("PTSD_genomicSEM","PTSD_METAL")
+
+#run LDSC
+LDSCoutput<-ldsc(traits=traits,sample.prev=sample.prev,population.prev=population.prev,ld=ld,wld=wld,trait.names=trait.names)
+
+#genetic correlation between genomicSEM and METAL results are 1.059
+#we decide to use the GenomicSEM results in further analysis
+
+```
+####====CALCULATE NEFF FOR ANXIETY=====####
+we are calcualting the Neff
+```{r}
+
+otowa <- fread('raw_data/ANX/anxiety.meta.full.cc.tbl.gz', data.table = F)
+
+#convert allele frequency column to minor allele frequency for effective sample size calculation below
+otowa$MAF<-ifelse(otowa$Freq1 > .5, 1-otowa$Freq1, otowa$Freq1)
+
+#calculate SNP-specific sum of effective sample size
+otowa$Neff<-4/((2*otowa$MAF*(1-otowa$MAF))*otowa$StdErr^2)
+
+#calculate total effective N to cap backed out Neff
+
+Ncases<-5539
+Ncontrols<- 11771
+v<-Ncases/(Ncases+Ncontrols)
+TotalNeff<-4*v*(1-v)*(Ncases+Ncontrols)
+
+#cap at 1.1 of total effective N
+otowa$Neff<-ifelse(otowa$Neff > 1.1*TotalNeff, 1.1*TotalNeff, otowa$Neff)
+
+#lower limit of 0.5 of total effective N
+otowa$Neff<-ifelse(otowa$Neff < 0.5*TotalNeff, 0.5*TotalNeff, otowa$Neff)
+
+#remove Freq column now that we have created MAF column
+otowa$Freq1 <- NULL
+otowa$TotalN <- NULL
+
+#output the updated anxiety file
+write.table(otowa, file = "meta_analysis/genomicSEM_anxiety/otowa_withNeff.txt", sep = "\t", quote=FALSE,row.names=FALSE,col.names=TRUE)
+
+
+####====CALCULATE EFFECTIVE SAMPLE SIZE FOR Purves et al 2019 TotAnx_effect_sumstats FILE=====####
+#read in the data file from Purves 2020 (TotAnx_effect_sumstats)
+purves <- fread("raw_data/ANX/TotAnx_effect_sumstats",data.table= FALSE )
+#head(purves)
+
+purves <- purves %>% rename('A1' = 'A2', 'A2' = 'A1')
+purves <- subset(purves, select = c("SNP","pos","chr","A1","A2","af","info","effect","SE","P"))
+
+#convert allele frequency column to minor allele frequency for effective sample size calculation below
+#purves$MAF<-ifelse(purves$af > .5, 1-purves$af, purves$af)
+
+#remove Freq column now that we have created MAF column
+#purves$af<-NULL
+
+#calculate SNP-specific sum of effective sample size
+#purves$Neff<-4/((2*purves$MAF*(1-purves$MAF))*purves$SE^2)
+
+#calculate total effective N to cap backed out Neff
+#Ncases<-25453
+#Ncontrols<-58113
+#v<-Ncases/(Ncases+Ncontrols)
+#TotalNeff<-4*v*(1-v)*(Ncases+Ncontrols)
+
+#cap at 1.1 of total effective N
+#purves$Neff<-ifelse(purves$Neff > 1.1*TotalNeff, 1.1*TotalNeff, purves$Neff)
+
+#lower limit of 0.5 of total effective N
+#purves$Neff<-ifelse(purves$Neff < 0.5*TotalNeff, 0.5*TotalNeff, purves$Neff)
+
+
+#output the updated MDD file
+write.table(purves, file = "meta_analysis/genomicSEM_anxiety/Purves_anxiety_flipped.txt", sep = "\t", quote=FALSE,row.names=FALSE,col.names=TRUE)
+
+```
+
+#####===== 1.2 META ANALYSIS using METAL ======####
+
+1. METAL is downloaded and installed in the HPC
+2. load the METAL
+3. type the commmand below to METAL
+
+```{bash}
+
+#THIS SCRIPT EXECUTES A META ANALYSIS OF TWO ANX SUM STATS
+
+SEPARATOR TAB
+SCHEME SAMPLESIZE
+
+# Options to enable tracking of allele frequencies ...
+AVERAGEFREQ      ON
+MINMAXFREQ       ON
+
+# UNCOMMENT THE NEXT LINE TO ENABLE GenomicControl CORRECTION
+GENOMICCONTROL ON
+
+# === DESCRIBE AND PROCESS THE SECOND INPUT FILE ===
+MARKER SNPID
+ALLELE Allele1 Allele2
+EFFECT Effect
+PVALUE P.value 
+WEIGHTLABEL 
+FREQLABEL MAF
+PROCESS otowa_withNeff.txt
+
+# === DESCRIBE AND PROCESS THE FIRST INPUT FILE ===
+MARKER SNP
+ALLELE A1 A2
+EFFECT effect
+PVALUE P 
+WEIGHTLABEL DONTUSECOLUMN
+DEFAULTWEIGHT  
+FREQLABEL MAF
+PROCESS 
+
+
+EFFECT_PRINT_PRECISION 6
+STDERR_PRINT_PRECISION 6
+
+OUTFILE anxiety_meta_METAL .tbl
+ANALYZE HETEROGENEITY
+
+QUIT
+
+```
+
+anxiety meta-analysis using GenomicSEM
+```{r}
+
+#move to the meta-analysis folder for genomicSEM
+setwd('/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM_anxiety/')
+
+##======MUNGE THE FILES======##
+#create vector of the summary statistics files
+files<-c("/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM_anxiety/otowa_withNeff.txt", "/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM_anxiety/Purves_anxiety_flipped.txt")
+
+#define the reference file being used to allign alleles across summary stats
+#here we are using hapmap3
+hm3<-"/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/eur_w_ld_chr/w_hm3.snplist"
+
+#name the traits 
+trait.names<-c("Anxiety_Otowa", "Anxiety_Purves")
+
+#list the sample sizes.
+N=c(NA,83566)
+
+#definte the imputation quality filter
+info.filter=0.9
+
+#define the MAF filter
+maf.filter=0.01
+
+#run munge
+munge(files=files,hm3=hm3,trait.names=trait.names,N=N,info.filter=info.filter,maf.filter=maf.filter)
+
+
+###=======RUN LDSC========###
+
+setwd('/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM_anxiety/')
+
+#vector of munged summary statistics
+traits<-c("Anxiety_Otowa.sumstats.gz","Anxiety_Purves.sumstats.gz")
+
+#enter sample prevalence of .5 to reflect that all traits were munged using the sum of effective sample size
+sample.prev<-c(0.5,0.305)
+
+#vector of population prevalences
+population.prev<-c(0.311,0.311)
+
+#the folder of LD scores
+ld<-"/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/eur_w_ld_chr"
+
+#the folder of LD weights [typically the same as folder of LD scores]
+wld<-"/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/eur_w_ld_chr"
+
+#name the traits
+trait.names<-c("Anxiety_Otowa", "Anxiety_Purves")
+
+#run LDSC
+LDSCoutput<-ldsc(traits=traits,sample.prev=sample.prev,population.prev=population.prev,ld=ld,wld=wld,trait.names=trait.names)
+
+#optional command to save the output as a .RData file for later use
+save(LDSCoutput,file="LDSCoutput.RData")
+
+
+###=======COMMON FACTOR WITHOUT SNP EFFECT========###
+
+#specify the model
+model <- 'F1 =~ 1*Anxiety_Otowa + 1*Anxiety_Purves
+Anxiety_Otowa ~~ 0* Anxiety_Otowa
+Anxiety_Purves ~~ 0* Anxiety_Purves'
+
+#run the model
+CommonFactor_self<-usermodel(model = model, covstruc = LDSCoutput, estimation= "DWLS")
+
+CommonFactor_self
+
+
+###=======SUMSTATS========###
+
+#require(GenomicSEM)
+
+files <- files
+ref = "/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/reference.1000G.maf.0.005.txt.gz"
+trait.names <- c("Anxiety_Otowa", "Anxiety_Purves")
+se.logit = c(T,F)
+info.filter = 0.6
+maf.filter = 0.01
+OLS=c(F,F)
+linprob=c(F,T)
+
+N=N
+
+Sumstats <-sumstats(files=files,ref=ref,trait.names=trait.names,
+                      se.logit=se.logit,OLS=OLS,linprob=linprob,
+                    betas=NULL,info.filter=info.filter,
+                    maf.filter=maf.filter,keep.indel=FALSE,parallel=F,cores=100, N = N)
+
+save(Sumstats, file="/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM_anxiety/anxiety_sumstats.rda")
+```
+
+create_chunk_universal.R script is used to subset the SNPs to be included in one chunk. 
+it takes two argument: the sumstats and wkdir
+it divide the number of SNP the sumstats have by 10,000 and create a row_chunk.csv file list the begin and end row of the chunk. 
+e.g. 1, 100000
+     100001,200000
+So for each job, the script will only analysis 100000 SNPs.
+
+```{r, file='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/software/create_chunk_universal.R'}
+```
+after the row_chunk.csv is created, the arrary_geneSEM.sh script will automatically read the chunk file and tell the genomicSEM script what to analysis
+
+Then the LDSC outputs and Sumstats will be used in the GWAS
+```{bash, file = '/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM_anxiety/array_genomicSEM_anxiety.sh'}
+```
+
+```{r, file='/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM_anxiety/Anxiety_genomicSEM_meta.R'}
+```
+Merge the Anxiety genomicSEM meta-analysis results from chunks
+```{r}
+
+#############################################################
+#merge the results
+#############################################################
+
+library(dplyr)
+
+setwd('/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM_anxiety')
+getwd()
+
+# get list of all result files in directory
+
+files <- list.files(pattern = "^Anxiety_metaanalysis_")
+
+# get the column names from one of the files
+load(files[1])
+
+colnames <- colnames(result[[1]])
+
+#remove the example result
+remove(result)
+
+# initialize an empty data frame and give the colname names
+combined_data <- data.frame(matrix(ncol = 21, nrow = 0))
+
+colnames(combined_data) <- colnames
+
+# loop through each file, read in data, and bind to existing data frame
+for (file in files) {
+  load(file[[1]])
+  data <- result[[1]]
+  combined_data <- rbind(combined_data, data)
+}
+
+# sort data by row number
+combined_data <- combined_data %>% arrange(row_number())
+
+#save as rds file
+#saveRDS(combined_data, file = 'anxiety_meta_genomicSEM.rds')
+
+#rename few columns and save as txt file as well. 
+anxiety_meta<- combined_data
+
+setnames(anxiety_meta, "Pval_Estimate", "P")
+
+fwrite(anxiety_meta, "/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/meta_analysis/genomicSEM_anxiety/anxiety_meta_genomicSEM.txt", sep = "\t", col.names = TRUE)
+
+#calcualte new effective sample size of anxiety
+
+#restrict to MAF of 40% and 10%
+anxiety_meta2<-subset(anxiety_meta, anxiety_meta$MAF <= .4 & anxiety_meta$MAF >= .1)
+#calculate expected sample size (N_hat)
+N_hat<-mean(1/((2*anxiety_meta2$MAF*(1-anxiety_meta2$MAF))*anxiety_meta2$SE^2))
+#the effective sample size of anxiety metal-analysis is: 
+N_hat
+#76914.97
+
+
+
+
+
+
+
+
+
+
+```
+
+LDSC to compare METAL and genomicSEM output for Anxiety meta-analysis
+
+```{r}
+
+##======MUNGE THE FILES======##
+#create vector of the summary statistics files
+files<-c("meta_analysis/genomicSEM_anxiety/anxiety_meta_genomicSEM.txt")
+
+#define the reference file being used to allign alleles across summary stats
+#here we are using hapmap3
+hm3<-"/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/eur_w_ld_chr/w_hm3.snplist"
+
+#name the traits 
+trait.names<-c("Anxiety_genomicSEM")
+
+#list the sample sizes.
+N=c(76914.97)
+
+#definte the imputation quality filter
+info.filter=0.9
+
+#define the MAF filter
+maf.filter=0.01
+
+#run munge
+munge(files=files,hm3=hm3,trait.names=trait.names,N=N,info.filter=info.filter,maf.filter=maf.filter)
+
+
+###=======RUN LDSC========###
+
+
+#vector of munged summary statistics
+traits<-c("/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/Anxiety_genomicSEM.sumstats.gz")
+
+#enter sample prevalence of .5 to reflect that all traits were munged using the sum of effective sample size
+sample.prev<-c(NA)
+
+#vector of population prevalences
+population.prev<-c(NA)
+
+#the folder of LD scores
+ld<-"/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/eur_w_ld_chr"
+
+#the folder of LD weights [typically the same as folder of LD scores]
+wld<-"/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/raw_data/eur_w_ld_chr"
+
+#name the traits
+trait.names<-c("Anxiety_genomicSEM")
+
+#run LDSC
+LDSCoutput<-ldsc(traits=traits,sample.prev=sample.prev,population.prev=population.prev,ld=ld,wld=wld,trait.names=trait.names)
+
+#genetic correlation between genomicSEM and METAL results are 1.059
+#we decide to use the GenomicSEM results in further analysis
+
+```
+
+

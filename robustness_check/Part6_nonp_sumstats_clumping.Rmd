@@ -16,6 +16,35 @@ LD Clumping for p and non-p
 # LD clumping: we used the 1000g reference panel (EUR) in plink1.9 to do the LD clumping 
 
 ```{bash}
+#p gwas
+
+module load plink
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/p_gwas/p_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_p_gwase
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk '{print $3, $1, $4, $5}' CLUMP_p_gwase.clumped > CLUMP_p_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk '{if($4< 0.00000005) print $0}' CLUMP_p_gwase_new.txt > CLUMP_p_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_p_gwase_sig_independent_signals_New.txt
+
+# p have 200 hits
+
+
+```
+
+```{bash}
 
 #schizophrenia non-p
 
