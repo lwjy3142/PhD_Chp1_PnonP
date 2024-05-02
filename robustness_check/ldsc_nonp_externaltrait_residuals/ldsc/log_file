@@ -1,0 +1,750 @@
+Number of files in /mnt/d/PhD Queen Mary/PhD Project 1 - p_non-p/Analysis Pipeline/5 - LDSC/munged_external_cont: 29
+Running generateDeletevalues.sh for file: Age_at_smoking_initiation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Childhood_IQ.sumstats.gz
+Time taken: 25 seconds
+Running generateDeletevalues.sh for file: EA4.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Menopause.sumstats.gz
+Time taken: 25 seconds
+Running generateDeletevalues.sh for file: Metabolic_Syndrome.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Risk_beh_composite.sumstats.gz
+Time taken: 25 seconds
+Running generateDeletevalues.sh for file: Speeding_propensity.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Tiredness.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Waist_to_hip_ratio.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: birth_weight.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: chronotype.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: cigday.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: drinkweek.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: environmentalstress.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: executivefunctioning.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: externalizing.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: household_income.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: intelligence2.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: internalizing.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: lonelines.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: longevity.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: neighbourhood_deprivation.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: neurodegenerative.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: no_sexual_partners.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: noncog.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: risk_tolerance.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: selfrated_health.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: sleepduration.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: subjective_wellbeing.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Age_at_smoking_initiation.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Childhood_IQ.sumstats.gz
+Time taken: 25 seconds
+Running generateDeletevalues.sh for file: EA4.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Menopause.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Metabolic_Syndrome.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Risk_beh_composite.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Speeding_propensity.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Tiredness.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Waist_to_hip_ratio.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: birth_weight.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: chronotype.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: cigday.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: drinkweek.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: environmentalstress.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: executivefunctioning.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: externalizing.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: household_income.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: intelligence2.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: internalizing.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: lonelines.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: longevity.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: neighbourhood_deprivation.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: neurodegenerative.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: no_sexual_partners.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: noncog.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: risk_tolerance.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: selfrated_health.sumstats.gz
+Time taken: 32 seconds
+Running generateDeletevalues.sh for file: sleepduration.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: subjective_wellbeing.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Age_at_smoking_initiation.sumstats.gz
+Time taken: 30 seconds
+Running generateDeletevalues.sh for file: Childhood_IQ.sumstats.gz
+Time taken: 25 seconds
+Running generateDeletevalues.sh for file: EA4.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Menopause.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Metabolic_Syndrome.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Risk_beh_composite.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Speeding_propensity.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: Tiredness.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Waist_to_hip_ratio.sumstats.gz
+Time taken: 31 seconds
+Running generateDeletevalues.sh for file: birth_weight.sumstats.gz
+Time taken: 30 seconds
+Running generateDeletevalues.sh for file: chronotype.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: cigday.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: drinkweek.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: environmentalstress.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: executivefunctioning.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: externalizing.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: household_income.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: intelligence2.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: internalizing.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: lonelines.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: longevity.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: neighbourhood_deprivation.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: neurodegenerative.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: no_sexual_partners.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: noncog.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: risk_tolerance.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: selfrated_health.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: sleepduration.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: subjective_wellbeing.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Age_at_smoking_initiation.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: Childhood_IQ.sumstats.gz
+Time taken: 25 seconds
+Running generateDeletevalues.sh for file: EA4.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Menopause.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Metabolic_Syndrome.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Risk_beh_composite.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Speeding_propensity.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Tiredness.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Waist_to_hip_ratio.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: birth_weight.sumstats.gz
+Time taken: 25 seconds
+Running generateDeletevalues.sh for file: chronotype.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: cigday.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: drinkweek.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: environmentalstress.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: executivefunctioning.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: externalizing.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: household_income.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: intelligence2.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: internalizing.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: lonelines.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: longevity.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: neighbourhood_deprivation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: neurodegenerative.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: no_sexual_partners.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: noncog.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: risk_tolerance.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: selfrated_health.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: sleepduration.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: subjective_wellbeing.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Age_at_smoking_initiation.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Childhood_IQ.sumstats.gz
+Time taken: 25 seconds
+Running generateDeletevalues.sh for file: EA4.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Menopause.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Metabolic_Syndrome.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Risk_beh_composite.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Speeding_propensity.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Tiredness.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Waist_to_hip_ratio.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: birth_weight.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: chronotype.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: cigday.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: drinkweek.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: environmentalstress.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: executivefunctioning.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: externalizing.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: household_income.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: intelligence2.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: internalizing.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: lonelines.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: longevity.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: neighbourhood_deprivation.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: neurodegenerative.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: no_sexual_partners.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: noncog.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: risk_tolerance.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: selfrated_health.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: sleepduration.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: subjective_wellbeing.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Age_at_smoking_initiation.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Childhood_IQ.sumstats.gz
+Time taken: 25 seconds
+Running generateDeletevalues.sh for file: EA4.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Menopause.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Metabolic_Syndrome.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Risk_beh_composite.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Speeding_propensity.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Tiredness.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Waist_to_hip_ratio.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: birth_weight.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: chronotype.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: cigday.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: drinkweek.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: environmentalstress.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: executivefunctioning.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: externalizing.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: household_income.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: intelligence2.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: internalizing.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: lonelines.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: longevity.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: neighbourhood_deprivation.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: neurodegenerative.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: no_sexual_partners.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: noncog.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: risk_tolerance.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: selfrated_health.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: sleepduration.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: subjective_wellbeing.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Age_at_smoking_initiation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Childhood_IQ.sumstats.gz
+Time taken: 24 seconds
+Running generateDeletevalues.sh for file: EA4.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Menopause.sumstats.gz
+Time taken: 25 seconds
+Running generateDeletevalues.sh for file: Metabolic_Syndrome.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Risk_beh_composite.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Speeding_propensity.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Tiredness.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Waist_to_hip_ratio.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: birth_weight.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: chronotype.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: cigday.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: drinkweek.sumstats.gz
+Time taken: 25 seconds
+Running generateDeletevalues.sh for file: environmentalstress.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: executivefunctioning.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: externalizing.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: household_income.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: intelligence2.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: internalizing.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: lonelines.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: longevity.sumstats.gz
+Time taken: 25 seconds
+Running generateDeletevalues.sh for file: neighbourhood_deprivation.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: neurodegenerative.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: no_sexual_partners.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: noncog.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: risk_tolerance.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: selfrated_health.sumstats.gz
+Time taken: 3764 seconds
+Running generateDeletevalues.sh for file: sleepduration.sumstats.gz
+Time taken: 33 seconds
+Running generateDeletevalues.sh for file: subjective_wellbeing.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Age_at_smoking_initiation.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: Childhood_IQ.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: EA4.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Menopause.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: Metabolic_Syndrome.sumstats.gz
+Time taken: 30 seconds
+Running generateDeletevalues.sh for file: Risk_beh_composite.sumstats.gz
+Time taken: 31 seconds
+Running generateDeletevalues.sh for file: Speeding_propensity.sumstats.gz
+Time taken: 30 seconds
+Running generateDeletevalues.sh for file: Tiredness.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: Waist_to_hip_ratio.sumstats.gz
+Time taken: 30 seconds
+Running generateDeletevalues.sh for file: birth_weight.sumstats.gz
+Time taken: 30 seconds
+Running generateDeletevalues.sh for file: chronotype.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: cigday.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: drinkweek.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: environmentalstress.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: executivefunctioning.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: externalizing.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: household_income.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: intelligence2.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: internalizing.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: lonelines.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: longevity.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: neighbourhood_deprivation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: neurodegenerative.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: no_sexual_partners.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: noncog.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: risk_tolerance.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: selfrated_health.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: sleepduration.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: subjective_wellbeing.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Age_at_smoking_initiation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Childhood_IQ.sumstats.gz
+Time taken: 25 seconds
+Running generateDeletevalues.sh for file: EA4.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Menopause.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Metabolic_Syndrome.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Risk_beh_composite.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Speeding_propensity.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Tiredness.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Waist_to_hip_ratio.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: birth_weight.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: chronotype.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: cigday.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: drinkweek.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: environmentalstress.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: executivefunctioning.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: externalizing.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: household_income.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: intelligence2.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: internalizing.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: lonelines.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: longevity.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: neighbourhood_deprivation.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: neurodegenerative.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: no_sexual_partners.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: noncog.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: risk_tolerance.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: selfrated_health.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: sleepduration.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: subjective_wellbeing.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Age_at_smoking_initiation.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Childhood_IQ.sumstats.gz
+Time taken: 25 seconds
+Running generateDeletevalues.sh for file: EA4.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Menopause.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Metabolic_Syndrome.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Risk_beh_composite.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Speeding_propensity.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Tiredness.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Waist_to_hip_ratio.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: birth_weight.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: chronotype.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: cigday.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: drinkweek.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: environmentalstress.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: executivefunctioning.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: externalizing.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: household_income.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: intelligence2.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: internalizing.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: lonelines.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: longevity.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: neighbourhood_deprivation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: neurodegenerative.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: no_sexual_partners.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: noncog.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: risk_tolerance.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: selfrated_health.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: sleepduration.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: subjective_wellbeing.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Age_at_smoking_initiation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Childhood_IQ.sumstats.gz
+Time taken: 25 seconds
+Running generateDeletevalues.sh for file: EA4.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Menopause.sumstats.gz
+Time taken: 25 seconds
+Running generateDeletevalues.sh for file: Metabolic_Syndrome.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Risk_beh_composite.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Speeding_propensity.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Tiredness.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Waist_to_hip_ratio.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: birth_weight.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: chronotype.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: cigday.sumstats.gz
+Time taken: 78 seconds
+Running generateDeletevalues.sh for file: drinkweek.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: environmentalstress.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: executivefunctioning.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: externalizing.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: household_income.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: intelligence2.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: internalizing.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: lonelines.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: longevity.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: neighbourhood_deprivation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: neurodegenerative.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: no_sexual_partners.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: noncog.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: risk_tolerance.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: selfrated_health.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: sleepduration.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: subjective_wellbeing.sumstats.gz
+Time taken: 26 seconds
+Number of files in /mnt/d/PhD Queen Mary/PhD Project 1 - p_non-p/Analysis Pipeline/5 - LDSC/munged_external_binary: 5
+Running generateDeletevalues.sh for file: CUD.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Smoking_cessation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: backpain.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: ever_smoker.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: insomnia.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: CUD.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Smoking_cessation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: backpain.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: ever_smoker.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: insomnia.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: CUD.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Smoking_cessation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: backpain.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: ever_smoker.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: insomnia.sumstats.gz
+Time taken: 29 seconds
+Running generateDeletevalues.sh for file: CUD.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Smoking_cessation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: backpain.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: ever_smoker.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: insomnia.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: CUD.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Smoking_cessation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: backpain.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: ever_smoker.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: insomnia.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: CUD.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Smoking_cessation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: backpain.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: ever_smoker.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: insomnia.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: CUD.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Smoking_cessation.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: backpain.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: ever_smoker.sumstats.gz
+Time taken: 25 seconds
+Running generateDeletevalues.sh for file: insomnia.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: CUD.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Smoking_cessation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: backpain.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: ever_smoker.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: insomnia.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: CUD.sumstats.gz
+Time taken: 28 seconds
+Running generateDeletevalues.sh for file: Smoking_cessation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: backpain.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: ever_smoker.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: insomnia.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: CUD.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: Smoking_cessation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: backpain.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: ever_smoker.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: insomnia.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: CUD.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: Smoking_cessation.sumstats.gz
+Time taken: 27 seconds
+Running generateDeletevalues.sh for file: backpain.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: ever_smoker.sumstats.gz
+Time taken: 26 seconds
+Running generateDeletevalues.sh for file: insomnia.sumstats.gz
+Time taken: 26 seconds
