@@ -358,8 +358,34 @@ display: none;
 genomic research on psychiatric disorders”</p>
 <p>Title of the script: “Part 6 - nonp sumstats clumping”</p>
 <p>LD Clumping for p and non-p</p>
-<p>LD clumping: we used the 1000g reference panel (EUR) in plink1.9 to
-do the LD clumping</p>
+<div id="ld-clumping-we-used-the-1000g-reference-panel-eur-in-plink1.9-to-do-the-ld-clumping" class="section level1">
+<h1>LD clumping: we used the 1000g reference panel (EUR) in plink1.9 to
+do the LD clumping</h1>
+<pre class="bash"><code>#p gwas
+
+module load plink
+plink --bfile /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/ldpruning/EUR \
+--clump /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/p_gwas/p_gwas_results.txt  \
+--clump-kb 250 \
+--clump-r2 0.1 \
+--clump-field P \
+--clump-snp-field SNP \
+--out CLUMP_p_gwase
+
+# get only the rsid and pvalue of the independent SNPS
+
+awk &#39;{print $3, $1, $4, $5}&#39; CLUMP_p_gwase.clumped &gt; CLUMP_p_gwase_new.txt
+
+# create a file with only the significant independent SNPS
+
+awk &#39;{if($4&lt; 0.00000005) print $0}&#39; CLUMP_p_gwase_new.txt &gt; CLUMP_p_gwase_sig_independent_signals_New.txt
+
+# get infos about the file, the first number is the number of lines and therefore the number of significant independent signals
+
+wc CLUMP_p_gwase_sig_independent_signals_New.txt
+
+# p have 200 hits
+</code></pre>
 <pre class="bash"><code>
 #schizophrenia non-p
 
@@ -633,6 +659,7 @@ wc CLUMP_TSnonp_gwase_sig_independent_signals_New.txt
 
 #0 HITS
 </code></pre>
+</div>
 
 
 

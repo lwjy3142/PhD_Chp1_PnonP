@@ -101,8 +101,7 @@ sample.prev <- c(.5, .5, .5, .5, .5, .5, NA, .5, .5, .5, .5)
 
 #These estimates can be obtained from a number of sources, such as large scale epidemiological studies. Possible range = 0-1. 
 #Again, if the trait is continuous the values should equal NA.
-#we first used the prevalence rates from more recent Grotzinger publication (https://pubmed.ncbi.nlm.nih.gov/35973856/), but got inflated h2 so reverted back to 
-#Grotzinger 2022 paper pop prevalence
+#we used the prevalence rates from both the more recent recent Grotzinger publication (https://pubmed.ncbi.nlm.nih.gov/35973856/), as well as #the Grotzinger 2022 paper pop prevalence depending on what summary statistics were used 
 population.prev <- c(.01, .02, 0.05, 0.21, 0.2, 0.3, NA, 0.012, 0.025, 0.009, 0.008)
 
 #A folder of LD scores used as the independent variable in LDSC (ld) and LDSC weights (wld).

@@ -357,30 +357,78 @@ display: none;
 <p>Project: “Controlling for the general psychopathology factor p in
 genomic research on psychiatric disorders”</p>
 <p>Title of the script: “Part3_Nonp_merge”</p>
-<pre class="r"><code>#set directory to there the genomicSEM outputs were kept 
-setwd(&#39;robustness_check/&#39;)
+<p>p gwas</p>
+<pre class="r"><code>setwd(&#39;/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/p_gwas&#39;)
 
 getwd()
 
 library(dplyr)
 library(qqman)
+library(data.table)
 
-# get list of all .rds files in the directory
+# get list of all .rds files in directory
 #files &lt;- list.files(pattern = &quot;\\.rds$&quot;)
 
-#list files of SCZ nonp
-files &lt;- list.files(pattern = &quot;^SCZnonp&quot;)
+files &lt;- list.files(pattern = &quot;^p_gwas&quot;)
 
-#check one output to get the colnames for the merged dataset
 load(files[1])
-test &lt;- result[[1]]
+
+test &lt;- result
+
 colnames &lt;- colnames(test)
-remove(test) #remove the test file before merging
+
+remove(test)
 
 # initialize an empty data frame
 combined_data &lt;- data.frame(matrix(ncol = 27, nrow = 0))
 
-#give colnames to the empty data frame perparing for merging
+colnames(combined_data) &lt;- colnames
+
+# loop through each file, read in data, and bind to existing data frame
+for (file in files) {
+  load(file)
+  combined_data &lt;- rbind(combined_data, result)
+}
+
+saveRDS(combined_data, file = &#39;p_gwas_results.rds&#39;)
+
+head(combined_data)
+
+colnames(combined_data)[colnames(combined_data) == &quot;Pval_Estimate&quot;] &lt;- &quot;P&quot;
+
+num_rows &lt;- nrow(combined_data)
+#restrict to MAF of 40% and 10%
+combined_data2&lt;-subset(combined_data, combined_data$MAF &lt;= .4 &amp; combined_data$MAF &gt;= .1)
+#calculate expected sample size (N_hat)
+N_hat&lt;-mean(1/((2*combined_data2$MAF*(1-combined_data2$MAF))*combined_data2$se_c^2))
+print(paste(&quot;Number of rows in p gwas&quot;, &quot;:&quot;, num_rows, N_hat))
+
+fwrite(combined_data, file = &quot;p_gwas_results.txt&quot;, sep = &quot;\t&quot;, col.names = TRUE)
+#manhattan(combined_data, p = &#39;P&#39;)</code></pre>
+<pre class="r"><code>setwd(&#39;/scratch/prj/teds/Sumstate_PRS_Codelab/robustness_check/&#39;)
+
+getwd()
+
+library(dplyr)
+library(qqman)
+library(data.table)
+
+# get list of all .rds files in directory
+#files &lt;- list.files(pattern = &quot;\\.rds$&quot;)
+
+files &lt;- list.files(pattern = &quot;^SCZnonp&quot;)
+
+load(files[1])
+
+test &lt;- result[[1]]
+
+colnames &lt;- colnames(test)
+
+remove(test)
+
+# initialize an empty data frame
+combined_data &lt;- data.frame(matrix(ncol = 27, nrow = 0))
+
 colnames(combined_data) &lt;- colnames
 
 # loop through each file, read in data, and bind to existing data frame

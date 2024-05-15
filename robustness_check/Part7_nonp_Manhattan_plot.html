@@ -1097,6 +1097,75 @@ manhattan &lt;- ggplot(don, aes(x=BPcum, y=-log10(P))) +
 # Save the ggplot as a file
 ggsave(&quot;nonp_manhattan_plots/TSnonP_manhatten.png&quot;, manhattan,width = 7.29, height = 4.5, units = &quot;in&quot;, dpi = 300)</code></pre>
 </div>
+<div id="for-p" class="section level1">
+<h1>for p</h1>
+<pre class="r"><code>gwasResults &lt;- fread(&#39;./p_gwas/p_gwas_results.txt&#39;)
+independenthit &lt;- fread(&#39;./p_gwas/CLUMP_p_gwase_sig_independent_signals_New.txt&#39;)
+snpsOfInterest &lt;- as.list(independenthit[,1])
+snpsOfInterest &lt;- snpsOfInterest$V1
+
+# Make the Manhattan plot on the gwasResults dataset
+manhattan(gwasResults, chr=&quot;CHR&quot;, bp=&quot;BP&quot;, snp=&quot;SNP&quot;, p=&quot;P&quot; , highlight = snpsOfInterest, cex=0.4, col = c(&#39;blue4&#39;, &#39;orange3&#39;))
+
+# List of SNPs to highlight are in the snpsOfInterest object
+# We will use ggrepel for the annotation
+  
+# Prepare the dataset
+don &lt;- gwasResults %&gt;% 
+  mutate(CHR = as.numeric(CHR)) %&gt;%
+  mutate(BP = as.numeric(BP)) %&gt;% 
+  # Compute chromosome size
+  group_by(CHR) %&gt;% 
+  summarise(chr_len=max(BP))  %&gt;%
+  # Calculate cumulative position of each chromosome
+  mutate(tot=cumsum(chr_len)-chr_len) %&gt;%
+  select(-chr_len) %&gt;%
+  
+  # Add this info to the initial dataset
+  left_join(gwasResults, ., by=c(&quot;CHR&quot;=&quot;CHR&quot;)) %&gt;%
+  
+  # Add a cumulative position of each SNP
+  arrange(CHR, BP) %&gt;%
+  mutate( BPcum=BP+tot) %&gt;%
+
+  # Add highlight and annotation information
+  mutate( is_highlight=ifelse(SNP %in% snpsOfInterest, &quot;yes&quot;, &quot;no&quot;))
+
+# Prepare X axis
+axisdf &lt;- don %&gt;% group_by(CHR) %&gt;% summarize(center=( max(BPcum) + min(BPcum) ) / 2 )
+
+sig &lt;- 5e-8
+# Make the plot
+manhattan &lt;- ggplot(don, aes(x=BPcum, y=-log10(P))) +
+    geom_hline(yintercept = -log10(sig), color = &quot;grey40&quot;, linetype = &quot;dashed&quot;) +
+    
+    # Show all points
+    geom_point(aes(color=as.factor(CHR)), alpha=1, size=0.6) +
+    scale_color_manual(values = rep(c(&quot;blue&quot;, &quot;green4&quot;), 22 )) +
+    
+    # custom X axis:
+    scale_x_continuous(label = axisdf$CHR, breaks= axisdf$center ) +
+    scale_y_continuous(expand = c(0, 0), limits = c(y_min, y_max)) +     # remove space between plot area and x axis
+
+    # Add highlighted points
+    geom_point(data=subset(don, is_highlight==&quot;yes&quot;), size=1.5, shape=23, fill=&quot;orangered&quot;, color=&quot;darkred&quot;) +
+
+    # Custom the theme:
+    theme_bw() +
+    theme( 
+      legend.position=&quot;none&quot;,
+      panel.border = element_blank(),
+      panel.grid.major.x = element_blank(),
+      panel.grid.minor.x = element_blank(),
+      axis.text.x = element_text(size = 6)
+    )+
+  labs(x = &quot;Chromosome&quot;)
+ggsave(&quot;p_manhattan_plots.png&quot;, manhattan,width = 7.29, height = 4.5, units = &quot;in&quot;, dpi = 300)
+
+ggsave(manhattan, 
+       file=&quot;/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/p_gwas/p_manhattan_plots.png&quot;, 
+       width = 7.29, height = 4.5) </code></pre>
+</div>
 
 
 

@@ -439,8 +439,7 @@ sample.prev &lt;- c(.5, .5, .5, .5, .5, .5, NA, .5, .5, .5, .5)
 
 #These estimates can be obtained from a number of sources, such as large scale epidemiological studies. Possible range = 0-1. 
 #Again, if the trait is continuous the values should equal NA.
-#we first used the prevalence rates from more recent Grotzinger publication (https://pubmed.ncbi.nlm.nih.gov/35973856/), but got inflated h2 so reverted back to 
-#Grotzinger 2022 paper pop prevalence
+#we used the prevalence rates from both the more recent recent Grotzinger publication (https://pubmed.ncbi.nlm.nih.gov/35973856/), as well as #the Grotzinger 2022 paper pop prevalence depending on what summary statistics were used 
 population.prev &lt;- c(.01, .02, 0.05, 0.21, 0.2, 0.3, NA, 0.012, 0.025, 0.009, 0.008)
 
 #A folder of LD scores used as the independent variable in LDSC (ld) and LDSC weights (wld).
@@ -519,17 +518,17 @@ linprob=c(F, F, F, F, F, F, F, F, F, F, F)
 sumstats &lt;-sumstats(files=files,ref=ref,trait.names=trait.names,
                       se.logit=se.logit,OLS=OLS,linprob=linprob,
                       info.filter=info.filter,
-                      maf.filter=maf.filter,keep.indel=FALSE,parallel=TRUE,cores=100, N=N)
+                      maf.filter=maf.filter,keep.indel=FALSE,parallel=TRUE,cores=11, N=N)
 
 #save the cleaned SNP data to a r.data file for GWAS analysis
-save(sumstats, file=&quot;/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/P_sumstats_11traits.RData&quot;)</code></pre>
+save(sumstats, file=&quot;/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/P_sumstats_11traits.RData&quot;)
+save(sumstats, file=&quot;/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/robustness_check/P_sumstats_11traits.RData&quot;)</code></pre>
 <p>create_chunk_universal.R script is used to subset the SNPs to be
 included in one chunk. it takes two argument: the sumstats and wkdir it
 divide the number of SNP the sumstats have by 10,000 and create a
 row_chunk.csv file list the begin and end row of the chunk. e.g. 1,
 100000 100001,200000 So for each job, the script will only analysis
-100000 SNPs. Rscript ../script/create_chunk_universal.R
-P_sumstats_11traits.RData ./</p>
+100000 SNPs.</p>
 <pre class="r"><code>#!/usr/bin/env Rscript
 args = commandArgs(trailingOnly=TRUE)
 sumstats=as.character(args[1])
@@ -556,6 +555,8 @@ for(i in 1:num_partitions) {
 combined_results &lt;- do.call(&quot;rbind&quot;, result_list)
 
 write.csv(combined_results, file = paste0(wkdir, &#39;/row_chunk.csv&#39;), row.names = F, col.names = F, quote = F)</code></pre>
+<p>Rscript ../script/create_chunk_universal.R P_sumstats_11traits.RData
+./</p>
 <p>after the row_chunk.csv is created, the arrary_geneSEM.sh script will
 automatically read the chunk file and tell the genomicSEM script what to
 analysis</p>
@@ -564,6 +565,8 @@ GWAS</p>
 <hr />
 <p>here is one example of the .sh script taking p as example.</p>
 <pre class="bash"><code>#!/bin/bash -l
+#SBATCH --output=/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/p_genoSEM_%A_%a.out
+#SBATCH --error=/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/p_genoSEM_%A_%a.err
 #SBATCH --time=2-00:00:00
 #SBATCH --cpus-per-task=32
 #SBATCH --ntasks=1
@@ -581,7 +584,7 @@ export OPENBLAS_NUM_THREADS=1
 #the array argument should reflect the number of row in the row_chunk.csv
 
 
-WORKdir=&#39;./disease_specificity/genomicSEM/&#39; #set working directory
+WORKdir=&#39;/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/&#39; #set working directory
 
 cd $WORKdir
 
@@ -593,9 +596,8 @@ end_row=$(awk -F&#39;,&#39; &quot;NR==$SLURM_ARRAY_TASK_ID {print \$2}&quot; ${W
 module load r/4.1.1-gcc-9.4.0-withx-rmath-standalone-python-3.8.12
 
 #Execute program located in current folder
-#this is a example running the r script to do the GWAS, the R script should be seperated into individual scripts and submitted seperately as jobs per trait
 
-Rscript --vanilla ./disease_specificity/genomicSEM/P_genomicSEM_meta.R -s $start_row -e $end_row</code></pre>
+Rscript --vanilla /scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/P_genomicSEM_meta.R -s $start_row -e $end_row</code></pre>
 <pre class="r"><code>library(GenomicSEM)
 library(optparse)
 
@@ -619,18 +621,17 @@ start_row = opt$start
 end_row = opt$end
 
 
-#load the LDSC and perpared SUMSTATS file for GWAS
-load(&#39;./LDSC_11traits.RData&#39;)
+#load the LDSC and sumstats from before
+load(&#39;/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/LDSC_11traits.RData&#39;)
 
-load(&#39;./P_sumstats_11traits.RData&#39;)
+load(&#39;/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/P_sumstats_11traits.RData&#39;)
 
 #subset the sumstats
-test &lt;- sumstats[start_row:start_row,]
+test &lt;- sumstats[start_row:end_row,]
 
-#run the gwas of the subset
-#result &lt;- commonfactorGWAS(covstruc = LDSCoutput, SNPs = test, cores = 100)
+#run common factor model - the p gwas
+result &lt;- commonfactorGWAS(covstruc = LDSCoutput, SNPs = test, cores = 100)
 
-#each of the traits should be submiited as a sperate job. 
 
 #MDD
 model = &quot;  
@@ -644,12 +645,8 @@ P + MDD ~ SNP
 
 result &lt;- userGWAS(covstruc = LDSCoutput, SNPs = test, model = model, sub=c(&quot;MDD~SNP&quot;),cores = 100)
 
-#create a file name including the range of the chunk
-filename &lt;- paste0(&#39;./robustness_check/MDDnonp_gwas_&#39;, start_row,&#39;_&#39;, end_row, &#39;.rds&#39;)
+save(result, file=&#39;FIRST100SNP_MDD_residuals.rds&#39;)
 
-
-#save the result as rds file
-save(result, file=filename)
 
 #ANX
 model = &quot;  
@@ -663,12 +660,7 @@ P + ANX ~ SNP
 
 result &lt;- userGWAS(covstruc = LDSCoutput, SNPs = test, model = model, sub=c(&quot;ANX~SNP&quot;),cores = 100)
 
-#create a file name including the range of the chunk
-filename &lt;- paste0(&#39;./robustness_check/ANXnonp_gwas_&#39;, start_row,&#39;_&#39;, end_row, &#39;.rds&#39;)
-
-
-#save the result as rds file
-save(result, file=filename)
+save(result, file=&#39;FIRST100SNP_ANX_residuals.rds&#39;)
 
 #SCZ
 model = &quot;  
@@ -682,12 +674,7 @@ P + SCZ ~ SNP
 
 result &lt;- userGWAS(covstruc = LDSCoutput, SNPs = test, model = model, sub=c(&quot;SCZ~SNP&quot;),cores = 100)
 
-#create a file name including the range of the chunk
-filename &lt;- paste0(&#39;./robustness_check/SCZnonp_gwas_&#39;, start_row,&#39;_&#39;, end_row, &#39;.rds&#39;)
-
-
-#save the result as rds file
-save(result, file=filename)
+save(result, file=&#39;FIRST100SNP_SCZ_residuals.rds&#39;)
 
 #BIP
 model = &quot;  
@@ -701,12 +688,7 @@ P + BIP ~ SNP
 
 result &lt;- userGWAS(covstruc = LDSCoutput, SNPs = test, model = model, sub=c(&quot;BIP~SNP&quot;),cores = 100)
 
-#create a file name including the range of the chunk
-filename &lt;- paste0(&#39;./robustness_check/BIPnonp_gwas_&#39;, start_row,&#39;_&#39;, end_row, &#39;.rds&#39;)
-
-
-#save the result as rds file
-save(result, file=filename)
+save(result, file=&#39;FIRST100SNP_BIP_residuals.rds&#39;)
 
 #ADHD
 model = &quot;  
@@ -719,12 +701,8 @@ P + ADHD ~ SNP
 &quot;
 
 result &lt;- userGWAS(covstruc = LDSCoutput, SNPs = test, model = model, sub=c(&quot;ADHD~SNP&quot;),cores = 100)
-#create a file name including the range of the chunk
-filename &lt;- paste0(&#39;./robustness_check/ADHDnonp_gwas_&#39;, start_row,&#39;_&#39;, end_row, &#39;.rds&#39;)
 
-
-#save the result as rds file
-save(result, file=filename)
+save(result, file=&#39;FIRST100SNP_ADHD_residuals.rds&#39;)
 
 #PTSD
 model = &quot;  
@@ -738,12 +716,8 @@ P + PTSD ~ SNP
 
 result &lt;- userGWAS(covstruc = LDSCoutput, SNPs = test, model = model, sub=c(&quot;PTSD~SNP&quot;),cores = 100)
 
-#create a file name including the range of the chunk
-filename &lt;- paste0(&#39;./robustness_check/PTSDnonp_gwas_&#39;, start_row,&#39;_&#39;, end_row, &#39;.rds&#39;)
+save(result, file=&#39;FIRST100SNP_PTSD_residuals.rds&#39;)
 
-
-#save the result as rds file
-save(result, file=filename)
 
 #ALCH
 model = &quot;  
@@ -757,12 +731,7 @@ P + ALCH ~ SNP
 
 result &lt;- userGWAS(covstruc = LDSCoutput, SNPs = test, model = model, sub=c(&quot;ALCH~SNP&quot;),cores = 100)
 
-#create a file name including the range of the chunk
-filename &lt;- paste0(&#39;./robustness_check/ALCHnonp_gwas_&#39;, start_row,&#39;_&#39;, end_row, &#39;.rds&#39;)
-
-
-#save the result as rds file
-save(result, file=filename)
+save(result, file=&#39;FIRST100SNP_ALCH_residuals.rds&#39;)
 
 #ASD
 model = &quot;  
@@ -776,12 +745,7 @@ P + ASD ~ SNP
 
 result &lt;- userGWAS(covstruc = LDSCoutput, SNPs = test, model = model, sub=c(&quot;ASD~SNP&quot;),cores = 100)
 
-#create a file name including the range of the chunk
-filename &lt;- paste0(&#39;./robustness_check/ASDnonp_gwas_&#39;, start_row,&#39;_&#39;, end_row, &#39;.rds&#39;)
-
-
-#save the result as rds file
-save(result, file=filename)
+save(result, file=&#39;FIRST100SNP_ASD_residuals.rds&#39;)
 
 #OCD
 model = &quot;  
@@ -795,12 +759,7 @@ P + OCD ~ SNP
 
 result &lt;- userGWAS(covstruc = LDSCoutput, SNPs = test, model = model, sub=c(&quot;OCD~SNP&quot;),cores = 100)
 
-#create a file name including the range of the chunk
-filename &lt;- paste0(&#39;./robustness_check/OCDnonp_gwas_&#39;, start_row,&#39;_&#39;, end_row, &#39;.rds&#39;)
-
-
-#save the result as rds file
-save(result, file=filename)
+save(result, file=&#39;FIRST100SNP_OCD_residuals.rds&#39;)
 
 #AN
 model = &quot;  
@@ -814,12 +773,7 @@ P + AN ~ SNP
 
 result &lt;- userGWAS(covstruc = LDSCoutput, SNPs = test, model = model, sub=c(&quot;AN~SNP&quot;),cores = 100)
 
-#create a file name including the range of the chunk
-filename &lt;- paste0(&#39;./robustness_check/ANnonp_gwas_&#39;, start_row,&#39;_&#39;, end_row, &#39;.rds&#39;)
-
-
-#save the result as rds file
-save(result, file=filename)
+save(result, file=&#39;FIRST100SNP_AN_residuals.rds&#39;)
 
 #TS
 model = &quot;  
@@ -833,8 +787,10 @@ P + TS ~ SNP
 
 result &lt;- userGWAS(covstruc = LDSCoutput, SNPs = test, model = model, sub=c(&quot;TS~SNP&quot;),cores = 100)
 
+save(result, file=&#39;FIRST100SNP_TS_residuals.rds&#39;)
+
 #create a file name including the range of the chunk
-filename &lt;- paste0(&#39;./robustness_check/TSnonp_gwas_&#39;, start_row,&#39;_&#39;, end_row, &#39;.rds&#39;)
+filename &lt;- paste0(&#39;/scratch/prj/teds/Sumstate_PRS_Codelab/disease_specificity/genomicSEM/p_gwas_&#39;, start_row,&#39;_&#39;, end_row, &#39;.rds&#39;)
 
 
 #save the result as rds file

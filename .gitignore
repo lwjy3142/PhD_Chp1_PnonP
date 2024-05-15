@@ -9571,4 +9571,5 @@ robustness_check/p_gwas/p_gwas_results.rds
 robustness_check/p_gwas/p_gwas_results.txt
 script_dump/
 robustness_check/ldsc_nonp_externaltrait_residuals/
-script_dump/METAL
+script_dump/METAL/
+.Rproj.user

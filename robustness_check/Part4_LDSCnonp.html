@@ -517,6 +517,19 @@ covmatrix &lt;- LDSCoutput$S
 cormatrix &lt;- round(cov2cor(LDSCoutput$S), digits= 3)
 colnames(cormatrix) &lt;- c(&quot;SCZ&quot;, &quot;BIP&quot;, &quot;ADHD&quot;, &quot;MDD&quot;, &quot;ANX&quot;,&quot;PTSD&quot;, &quot;ALCH&quot;, &quot;ASD&quot;, &quot;OCD&quot;, &quot;AN&quot;, &quot;TS&quot;)
 rownames(cormatrix) &lt;- c(&quot;SCZ&quot;, &quot;BIP&quot;, &quot;ADHD&quot;, &quot;MDD&quot;, &quot;ANX&quot;, &quot;PTSD&quot;, &quot;ALCH&quot;, &quot;ASD&quot;, &quot;OCD&quot;, &quot;AN&quot;, &quot;TS&quot;)
+
+plot &lt;- corrplot(cormatrix, # Correlation matrix
+         method = &quot;color&quot;, # Correlation plot method e.g., color, circle
+         type = &quot;lower&quot;,    # Correlation plot style (also &quot;upper&quot; and &quot;lower&quot;)
+         diag = TRUE,      # If TRUE (default), adds the diagonal
+         tl.col = &quot;black&quot;, # Labels color
+         title = &quot;&quot;, # Main title
+         addCoef.col = &quot;black&quot;, # Add correlation coefficient
+         tl.cex = 0.5, #label size
+         number.cex = 0.5, #corr coefficient size
+         tl.srt = 45, #rotation of text labels) 
+         cl.pos=&quot;n&quot;)
+
 write.csv(cormatrix, &#39;LDSC_withintrait_original_results.csv&#39;)</code></pre>
 
 

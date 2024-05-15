@@ -181,6 +181,19 @@ covmatrix <- LDSCoutput$S
 cormatrix <- round(cov2cor(LDSCoutput$S), digits= 3)
 colnames(cormatrix) <- c("SCZ", "BIP", "ADHD", "MDD", "ANX","PTSD", "ALCH", "ASD", "OCD", "AN", "TS")
 rownames(cormatrix) <- c("SCZ", "BIP", "ADHD", "MDD", "ANX", "PTSD", "ALCH", "ASD", "OCD", "AN", "TS")
+
+plot <- corrplot(cormatrix, # Correlation matrix
+         method = "color", # Correlation plot method e.g., color, circle
+         type = "lower",    # Correlation plot style (also "upper" and "lower")
+         diag = TRUE,      # If TRUE (default), adds the diagonal
+         tl.col = "black", # Labels color
+         title = "", # Main title
+         addCoef.col = "black", # Add correlation coefficient
+         tl.cex = 0.5, #label size
+         number.cex = 0.5, #corr coefficient size
+         tl.srt = 45, #rotation of text labels) 
+         cl.pos="n")
+
 write.csv(cormatrix, 'LDSC_withintrait_original_results.csv')
 
 
