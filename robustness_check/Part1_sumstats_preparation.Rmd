@@ -3,6 +3,7 @@ Project: "Controlling for the general psychopathology factor p in genomic resear
 Title of the script: "Part1_sumstats_preparation"
 author: "Wangjingyi Liao & Engin Keser"
 date: "2023-11-22"
+platform: "R 4.3"
 output: html_document
 ---
 Project: "Controlling for the general psychopathology factor p in genomic research on psychiatric disorders"
